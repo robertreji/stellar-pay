@@ -72,10 +72,19 @@ export async function authenticateWithAnchor(
 export async function initiateWithdraw(
   publicKey: string,
   secretKey: string,
-  assetCode: string = "USDC"
+  assetCode: string = "USDC",
+  amount?: string
 ): Promise<InteractiveResponse> {
   // Authenticate first to get the JWT token
   const token = await authenticateWithAnchor(publicKey, secretKey);
+
+  const requestBody: any = {
+    asset_code: assetCode,
+    account: publicKey,
+  };
+  if (amount) {
+    requestBody.amount = amount;
+  }
 
   // Call the interactive withdraw endpoint
   const response = await fetch(`${ANCHOR_URL}/sep24/transactions/withdraw/interactive`, {
@@ -84,10 +93,7 @@ export async function initiateWithdraw(
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({
-      asset_code: assetCode,
-      account: publicKey,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {

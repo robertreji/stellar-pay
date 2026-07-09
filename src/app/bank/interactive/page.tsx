@@ -25,7 +25,7 @@ function InteractivePortalContent() {
   
   const [isScanning, setIsScanning] = useState(false);
 
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "ready">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [localIp, setLocalIp] = useState("localhost");
@@ -532,7 +532,7 @@ function InteractivePortalContent() {
                       onClick={handleGoHome}
                       className="btn btn-secondary"
                       style={{ flex: 1, padding: "16px", borderRadius: "12px" }}
-                      disabled={status === "loading"}
+                      disabled={status as string === "loading"}
                     >
                       Cancel
                     </button>
@@ -540,7 +540,7 @@ function InteractivePortalContent() {
                       onClick={handleAction}
                       className="btn btn-primary"
                       style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "linear-gradient(135deg, #22c55e, #10b981)" }}
-                      disabled={status === "loading"}
+                      disabled={status as string === "loading"}
                     >
                       Approve {kind}
                     </button>
