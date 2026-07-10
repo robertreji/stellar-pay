@@ -22,8 +22,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["better-sqlite3"],
   allowedDevOrigins: [
     localIp,
-    `${localIp}:3001`,
-    "localhost:3001",
+    `${localIp}:3002`,
+    "localhost:3002",
   ],
 };
 

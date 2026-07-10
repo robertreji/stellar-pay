@@ -159,7 +159,7 @@ export async function getAnchorTransaction(
   }
 
   const data = await response.json();
-  return data.transaction;
+  return data.transaction || data;
 }
 export { ANCHOR_URL };
 

@@ -3,11 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --experimental-https",
+    "dev": "next dev -p 3002 --experimental-https",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "withdraw-observer": "ts-node src/lib/withdraw-observer.ts"
+    "start": "next start -p 3002",
+    "lint": "eslint"
   },
   "dependencies": {
     "@stellar/freighter-api": "^6.0.1",

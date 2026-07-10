@@ -10,10 +10,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Missing id parameter" }, { status: 400 });
     }
 
-    const ANCHOR_URL = process.env.NEXT_PUBLIC_ANCHOR_URL || "http://localhost:8080";
+    const BANK_URL = process.env.BANK_URL || "http://localhost:3001";
     
-    console.log(`[anchor-proxy] Proxying getAnchorTransaction for ID: ${id}`);
-    const anchorRes = await fetch(`${ANCHOR_URL}/sep24/transaction?id=${encodeURIComponent(id)}`, {
+    console.log(`[anchor-proxy] Proxying getAnchorTransaction for ID: ${id} to Bank: ${BANK_URL}`);
+    const anchorRes = await fetch(`${BANK_URL}/api/bank/transaction?id=${encodeURIComponent(id)}`, {
       headers: {
         ...(token ? { Authorization: token } : {}),
       },
@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
 
     if (!anchorRes.ok) {
       const errText = await anchorRes.text();
-      return NextResponse.json({ error: `Anchor returned error: ${errText}` }, { status: anchorRes.status });
+      return NextResponse.json({ error: `Bank returned error: ${errText}` }, { status: anchorRes.status });
     }
 
     const data = await anchorRes.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error("Proxy anchor fetch error:", error);
+    console.error("Proxy bank fetch error:", error);
     return NextResponse.json({ error: error.message || "Failed to fetch transaction details" }, { status: 500 });
   }
 }
