@@ -46,12 +46,24 @@ export default function QuickSend({ onSelectContact, onAddNew }: QuickSendProps)
             <div
               className="quick-send-avatar"
               style={{
-                background: `linear-gradient(135deg, ${contact.color}, ${contact.color}88)`,
+                background: contact.image ? "none" : `linear-gradient(135deg, ${contact.color}, ${contact.color}88)`,
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              {getInitials(contact.name)}
+              {contact.image ? (
+                <img
+                  src={contact.image}
+                  alt={contact.name}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                getInitials(contact.name)
+              )}
             </div>
-            <span className="quick-send-name">{contact.name.split(" ")[0]}</span>
+            <span className="quick-send-name">{contact.name.startsWith("@") ? contact.name : `@${contact.name}`}</span>
           </button>
         ))}
       </div>

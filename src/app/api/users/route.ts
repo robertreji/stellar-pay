@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { registerUser, getUserByAddress, searchUsers } from "@/lib/db";
+import { registerUser, getUserByAddress, searchUsers, updateUserProfileImage } from "@/lib/db";
 
 // POST /api/users — Register a new user
 export async function POST(request: NextRequest) {
@@ -80,6 +80,37 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error("Users GET error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/users — Update profile image
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { stellarAddress, image } = body;
+
+    if (!stellarAddress || image === undefined) {
+      return NextResponse.json(
+        { error: "Stellar address and image are required" },
+        { status: 400 }
+      );
+    }
+
+    const success = updateUserProfileImage(stellarAddress, image);
+    if (!success) {
+      return NextResponse.json(
+        { error: "Failed to update profile image in database" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Users PUT error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -4,6 +4,7 @@ export interface Contact {
   address: string;
   color: string;
   createdAt: string;
+  image?: string;
 }
 
 const CONTACTS_KEY = "stellarpay_contacts";
@@ -34,7 +35,7 @@ export function getContacts(): Contact[] {
   return data ? JSON.parse(data) : [];
 }
 
-export function addContact(name: string, address: string): Contact {
+export function addContact(name: string, address: string, image?: string): Contact {
   const contacts = getContacts();
   const newContact: Contact = {
     id: crypto.randomUUID(),
@@ -42,6 +43,7 @@ export function addContact(name: string, address: string): Contact {
     address,
     color: generateColor(name),
     createdAt: new Date().toISOString(),
+    image,
   };
   contacts.push(newContact);
   localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));

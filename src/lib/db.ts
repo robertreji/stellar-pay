@@ -14,6 +14,7 @@ function getDb(): Database.Database {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL COLLATE NOCASE,
         stellar_address TEXT UNIQUE NOT NULL,
+        profile_image TEXT,
         created_at TEXT DEFAULT (datetime('now'))
       );
       CREATE TABLE IF NOT EXISTS config (
@@ -47,6 +48,11 @@ function getDb(): Database.Database {
       );
       CREATE INDEX IF NOT EXISTS idx_pending_withdrawals_id ON pending_withdrawals(transaction_id);
     `);
+    try {
+      db.exec("ALTER TABLE users ADD COLUMN profile_image TEXT;");
+    } catch {
+      // Column already exists
+    }
   }
   return db;
 }
@@ -72,6 +78,20 @@ export interface User {
   username: string;
   stellar_address: string;
   created_at: string;
+  profile_image?: string;
+}
+
+export function updateUserProfileImage(stellarAddress: string, image: string): boolean {
+  const database = getDb();
+  try {
+    database
+      .prepare("UPDATE users SET profile_image = ? WHERE stellar_address = ?")
+      .run(image, stellarAddress);
+    return true;
+  } catch (err) {
+    console.error("Update profile image failed:", err);
+    return false;
+  }
 }
 
 export function registerUser(

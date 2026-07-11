@@ -1,12 +1,69 @@
 "use client";
 
 import { useWallet } from "@/context/WalletContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ConnectWallet() {
   const { connected, address, secretKey, network, username, disconnectWallet } =
     useWallet();
   const [showSecret, setShowSecret] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  // Load user's profile image bound to their Stellar address and sync with server
+  useEffect(() => {
+    if (address) {
+      const stored = localStorage.getItem(`stellarpay_profile_image_${address}`);
+      if (stored) {
+        setProfileImage(stored);
+      }
+
+      // Sync from database so other users can see it
+      fetch(`/api/users?address=${encodeURIComponent(address)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.user?.profile_image) {
+            localStorage.setItem(`stellarpay_profile_image_${address}`, data.user.profile_image);
+            setProfileImage(data.user.profile_image);
+          }
+        })
+        .catch((e) => console.warn("Failed to sync profile image from server:", e));
+    } else {
+      setProfileImage(null);
+    }
+  }, [address]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // Limit to 1MB
+        alert("Image size must be less than 1MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        
+        // 1. Update locally
+        localStorage.setItem(`stellarpay_profile_image_${address}`, base64);
+        setProfileImage(base64);
+
+        // 2. Upload to server so others can see it
+        try {
+          const res = await fetch("/api/users", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ stellarAddress: address, image: base64 }),
+          });
+          if (!res.ok) {
+            console.warn("Failed to upload profile image to server.");
+          }
+        } catch (err) {
+          console.error("Error uploading profile image:", err);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   if (!connected || !address) {
     return null;
@@ -16,8 +73,38 @@ export default function ConnectWallet() {
     <div className="connect-wallet connected-card">
       <div className="wallet-connected-header">
         <div className="wallet-info">
-          <div className="wallet-avatar">
-            {username ? username.slice(0, 2).toUpperCase() : address.slice(0, 2)}
+          <div
+            className="wallet-avatar"
+            onClick={() => document.getElementById("own-avatar-input")?.click()}
+            style={{
+              cursor: "pointer",
+              overflow: "hidden",
+              position: "relative",
+              background: profileImage ? "none" : undefined,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Click to upload profile photo"
+          >
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="My Profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : username ? (
+              username.slice(0, 2).toUpperCase()
+            ) : (
+              address.slice(0, 2)
+            )}
+            <input
+              type="file"
+              id="own-avatar-input"
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ display: "none" }}
+            />
           </div>
           <div className="wallet-details">
             {username && <span className="wallet-username">@{username}</span>}

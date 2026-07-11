@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useWallet } from "@/context/WalletContext";
 import { getPaymentHistory, PaymentRecord } from "@/lib/stellar";
+import { getContacts, Contact } from "@/lib/contacts";
 
 export default function TransactionList() {
   const { address, connected } = useWallet();
   const [transactions, setTransactions] = useState<PaymentRecord[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
@@ -26,6 +28,7 @@ export default function TransactionList() {
   useEffect(() => {
     if (connected && address) {
       fetchTransactions();
+      setContacts(getContacts());
     }
   }, [connected, address, fetchTransactions]);
 
@@ -44,8 +47,9 @@ export default function TransactionList() {
     return date.toLocaleDateString();
   };
 
-  const getInitials = (addr: string) => {
-    return addr.slice(0, 2).toUpperCase();
+  const getInitials = (nameOrAddr: string) => {
+    const clean = nameOrAddr.replace("@", "");
+    return clean.slice(0, 2).toUpperCase();
   };
 
   const getAvatarColor = (addr: string) => {
@@ -118,7 +122,12 @@ export default function TransactionList() {
         <div className="transaction-items">
           {displayTxs.map((tx) => {
             const counterparty = tx.isIncoming ? tx.from : tx.to;
-            const truncated = `${counterparty.slice(0, 4)}...${counterparty.slice(-4)}`;
+            const contact = contacts.find((c) => c.address === counterparty);
+            const displayName = contact
+              ? contact.name.startsWith("@")
+                ? contact.name
+                : `@${contact.name}`
+              : `${counterparty.slice(0, 4)}...${counterparty.slice(-4)}`;
 
             return (
               <a
@@ -131,13 +140,26 @@ export default function TransactionList() {
                 <div
                   className="transaction-avatar"
                   style={{
-                    background: `linear-gradient(135deg, ${getAvatarColor(counterparty)}, ${getAvatarColor(counterparty)}88)`,
+                    background: contact?.image ? "none" : `linear-gradient(135deg, ${contact ? contact.color : getAvatarColor(counterparty)}, ${contact ? contact.color : getAvatarColor(counterparty)}88)`,
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 0
                   }}
                 >
-                  {getInitials(counterparty)}
+                  {contact?.image ? (
+                    <img
+                      src={contact.image}
+                      alt={contact.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    contact ? getInitials(contact.name) : getInitials(counterparty)
+                  )}
                 </div>
                 <div className="transaction-details">
-                  <span className="transaction-counterparty">{truncated}</span>
+                  <span className="transaction-counterparty">{displayName}</span>
                   <span className="transaction-type">
                     {tx.isIncoming ? "Received" : "Sent"} · {formatTime(tx.createdAt)}
                   </span>
