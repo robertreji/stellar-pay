@@ -31,20 +31,18 @@ export default function BalanceCard() {
     localStorage.setItem("stellarpay_show_balance", String(nextState));
   };
 
-
-
   if (!connected) {
     return null;
   }
 
   return (
-    <div className="balance-card">
-      <div className="balance-header">
-        <div className="balance-label-wrapper">
-          <span className="balance-label">Total Balance</span>
+    <div className="bg-bg-card border border-border-theme rounded-[24px] p-7 shadow-md relative overflow-hidden mb-6 flex flex-col justify-between min-h-[180px]">
+      <div className="flex justify-between items-center w-full">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-text-muted">Total Balance</span>
           <button
             onClick={toggleVisibility}
-            className="balance-visibility-btn"
+            className="bg-transparent border-0 text-text-muted cursor-pointer p-1 flex items-center justify-center rounded transition-all duration-200 hover:text-text-primary hover:bg-[#1b4332]/5"
             title={showBalance ? "Hide Balance" : "Show Balance"}
           >
             {showBalance ? (
@@ -61,42 +59,42 @@ export default function BalanceCard() {
           </button>
         </div>
 
-        <div className="currency-select-container">
+        <div className="relative flex items-center">
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value as "USD" | "XLM")}
-            className="currency-selector-select"
+            className="appearance-none bg-bg-secondary border border-border-theme rounded-lg text-text-primary py-1.5 pl-3 pr-7 text-xs font-semibold cursor-pointer outline-none transition-all duration-200 hover:bg-bg-card-hover hover:border-border-theme-hover"
           >
             <option value="USD">USD</option>
             <option value="XLM">XLM</option>
           </select>
-          <svg className="currency-select-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+          <svg className="absolute right-2.5 pointer-events-none text-text-secondary" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </div>
       </div>
 
       {isLoadingBalances ? (
-        <div className="balance-loading">
+        <div className="h-[60px] my-4 flex items-center">
           <div className="shimmer" style={{ width: "160px", height: "40px", borderRadius: "8px" }} />
         </div>
       ) : (
-        <h1 className="balance-amount">
+        <h1 className="text-4xl md:text-5.5xl font-extrabold text-text-primary leading-tight my-4 tracking-tight">
           {!showBalance ? (
             "••••••"
           ) : (
             <>
               {currency === "USD" ? "$" : ""}
               {formattedBalance}
-              {currency === "XLM" && <span className="balance-unit">XLM</span>}
+              {currency === "XLM" && <span className="text-2xl font-semibold text-text-secondary ml-1">XLM</span>}
             </>
           )}
         </h1>
       )}
 
-      <div className="balance-footer" style={{ margin: 0 }}>
-        <div className="balance-network-badge">
-          <div className="badge-dot" />
+      <div className="flex items-center gap-2 mt-4" style={{ margin: 0 }}>
+        <div className="flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-success/8 border border-success/15 text-[11px] font-semibold text-success">
+          <div className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_6px_var(--color-success)]" />
           <span>Testnet</span>
         </div>
       </div>

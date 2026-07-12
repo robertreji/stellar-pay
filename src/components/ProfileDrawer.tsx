@@ -45,11 +45,11 @@ export default function ProfileDrawer({
       reader.onloadend = async () => {
         const base64 = reader.result as string;
 
-        // 1. Update locally
+        // Update locally
         localStorage.setItem(`stellarpay_profile_image_${address}`, base64);
         setProfileImage(base64);
 
-        // 2. Upload to server
+        // Upload to server
         try {
           const res = await fetch("/api/users", {
             method: "PUT",
@@ -90,11 +90,11 @@ export default function ProfileDrawer({
   };
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className="drawer-content" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "700" }}>Profile Settings</h2>
-          <button className="modal-close" onClick={onClose}>
+    <div className="fixed inset-0 bg-[#132e22]/40 backdrop-blur-sm flex justify-end z-[1000] p-0 animate-[fadeIn_0.2s_ease]" onClick={onClose}>
+      <div className="bg-bg-secondary border-l border-border-theme w-full max-w-[400px] h-screen p-8 flex flex-col shadow-2xl animate-[slideInRight_0.3s_ease]" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-lg font-bold text-text-primary">Profile Settings</h2>
+          <button className="bg-transparent border-0 text-text-muted cursor-pointer p-1 flex items-center justify-center rounded-full hover:bg-bg-hover hover:text-text-primary transition-all duration-200" onClick={onClose}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -102,51 +102,22 @@ export default function ProfileDrawer({
           </button>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "24px", flex: 1, overflowY: "auto", paddingRight: "4px" }}>
+        <div className="flex-1 overflow-y-auto flex flex-col gap-6 pr-1">
           {/* Avatar Upload Container */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+          <div className="flex flex-col items-center gap-2.5">
             <div
               onClick={() => document.getElementById("drawer-avatar-input")?.click()}
-              style={{
-                width: "96px",
-                height: "96px",
-                borderRadius: "50%",
-                background: profileImage ? "none" : "var(--gradient-primary)",
-                border: "2px solid rgba(255,255,255,0.06)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                position: "relative",
-                overflow: "hidden",
-                boxShadow: "var(--shadow-md)"
-              }}
+              className="w-24 h-24 rounded-full flex items-center justify-center cursor-pointer relative overflow-hidden border border-border-theme shadow-md bg-gradient-to-r from-accent-purple to-accent-indigo text-white group"
               title="Click to change profile photo"
             >
               {profileImage ? (
-                <img src={profileImage} alt="Profile photo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={profileImage} alt="Profile photo" className="w-full h-full object-cover" />
               ) : (
-                <span style={{ fontSize: "32px", fontWeight: "700", color: "white" }}>
+                <span className="text-3xl font-bold">
                   {getInitials(username || address)}
                 </span>
               )}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "rgba(0,0,0,0.6)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: 0,
-                  transition: "opacity 0.2s ease",
-                  color: "white",
-                  fontSize: "12px",
-                  fontWeight: "600"
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = "0"}
-              >
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs font-semibold">
                 {uploading ? "Uploading..." : "Change Photo"}
               </div>
             </div>
@@ -155,41 +126,25 @@ export default function ProfileDrawer({
               id="drawer-avatar-input"
               accept="image/*"
               onChange={handleImageUpload}
-              style={{ display: "none" }}
+              className="hidden"
             />
-            {username && <span style={{ fontSize: "18px", fontWeight: "700", color: "var(--text-primary)" }}>@{username}</span>}
+            {username && <span className="text-lg font-bold text-text-primary">@{username}</span>}
           </div>
 
           {/* Public Address Group */}
-          <div className="form-group" style={{ width: "100%" }}>
-            <label>Public Stellar Address</label>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <div
-                style={{
-                  flex: 1,
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border-subtle)",
-                  borderRadius: "12px",
-                  padding: "12px",
-                  fontFamily: "monospace",
-                  fontSize: "12px",
-                  color: "var(--text-secondary)",
-                  wordBreak: "break-all",
-                  lineHeight: "1.4"
-                }}
-              >
+          <div className="flex flex-col gap-2 w-full">
+            <label className="text-xs font-semibold text-text-secondary">Public Stellar Address</label>
+            <div className="flex gap-2">
+              <div className="flex-1 bg-bg-card border border-border-theme rounded-xl p-3 font-mono text-xs text-text-secondary break-all leading-normal">
                 {address}
               </div>
               <button
                 onClick={handleCopyAddress}
-                className="btn btn-primary"
-                style={{
-                  padding: "0 16px",
-                  borderRadius: "12px",
-                  height: "auto",
-                  background: copiedAddress ? "var(--success)" : undefined,
-                  boxShadow: copiedAddress ? "0 4px 12px rgba(34,197,94,0.3)" : undefined
-                }}
+                className={`py-3 px-4 text-xs font-bold rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 ${
+                  copiedAddress
+                    ? "bg-success text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
+                    : "bg-gradient-to-r from-accent-purple to-accent-indigo text-white"
+                }`}
               >
                 {copiedAddress ? "Copied" : "Copy"}
               </button>
@@ -197,67 +152,37 @@ export default function ProfileDrawer({
           </div>
 
           {/* Secret Key reveal / backup */}
-          <div className="form-group" style={{ width: "100%" }}>
-            <label>Secret Key Backup</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div className="flex flex-col gap-2 w-full">
+            <label className="text-xs font-semibold text-text-secondary">Secret Key Backup</label>
+            <div className="flex flex-col gap-2.5">
               <button
                 type="button"
                 onClick={() => setShowSecret(!showSecret)}
-                className="btn"
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid var(--border-subtle)",
-                  borderRadius: "12px",
-                  color: showSecret ? "var(--error)" : "var(--text-secondary)",
-                  width: "100%",
-                  padding: "12px"
-                }}
+                className={`w-full py-3 px-4 text-xs font-bold rounded-xl border border-border-theme cursor-pointer transition-all duration-200 ${
+                  showSecret
+                    ? "bg-error/10 border-error/20 text-error"
+                    : "bg-bg-card text-text-secondary hover:bg-bg-hover hover:border-border-theme-hover"
+                }`}
               >
                 {showSecret ? "Hide Secret Key" : "Reveal Secret Key (Warning)"}
               </button>
 
               {showSecret && secretKey && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", animation: "fadeIn 0.2s ease" }}>
-                  <div
-                    style={{
-                      background: "rgba(239, 68, 68, 0.05)",
-                      border: "1px solid rgba(239, 68, 68, 0.15)",
-                      borderRadius: "12px",
-                      padding: "12px",
-                      fontSize: "11px",
-                      color: "var(--error)",
-                      lineHeight: "1.5"
-                    }}
-                  >
+                <div className="flex flex-col gap-2.5 w-full animate-[fadeIn_0.2s_ease]">
+                  <div className="bg-error/5 border border-error/15 rounded-xl p-3 text-[11px] text-error leading-normal font-semibold">
                     <strong>WARNING:</strong> Never share your secret key. Anyone with this key can access all your funds.
                   </div>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <div
-                      style={{
-                        flex: 1,
-                        background: "var(--bg-card)",
-                        border: "1px solid var(--border-subtle)",
-                        borderRadius: "12px",
-                        padding: "12px",
-                        fontFamily: "monospace",
-                        fontSize: "12px",
-                        color: "var(--text-secondary)",
-                        wordBreak: "break-all",
-                        lineHeight: "1.4"
-                      }}
-                    >
+                  <div className="flex gap-2">
+                    <div className="flex-1 bg-bg-card border border-border-theme rounded-xl p-3 font-mono text-xs text-text-secondary break-all leading-normal">
                       {secretKey}
                     </div>
                     <button
                       onClick={handleCopySecret}
-                      className="btn btn-primary"
-                      style={{
-                        padding: "0 16px",
-                        borderRadius: "12px",
-                        height: "auto",
-                        background: copiedSecret ? "var(--success)" : undefined,
-                        boxShadow: copiedSecret ? "0 4px 12px rgba(34,197,94,0.3)" : undefined
-                      }}
+                      className={`py-3 px-4 text-xs font-bold rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 ${
+                        copiedSecret
+                          ? "bg-success text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
+                          : "bg-gradient-to-r from-accent-purple to-accent-indigo text-white"
+                      }`}
                     >
                       {copiedSecret ? "Copied" : "Copy"}
                     </button>
@@ -269,29 +194,13 @@ export default function ProfileDrawer({
         </div>
 
         {/* Footer Actions */}
-        <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border-subtle)" }}>
+        <div className="mt-6 pt-6 border-t border-border-theme">
           <button
             onClick={() => {
               disconnectWallet();
               onClose();
             }}
-            className="btn btn-primary btn-full"
-            style={{
-              background: "rgba(239, 68, 68, 0.1)",
-              border: "1px solid rgba(239, 68, 68, 0.2)",
-              color: "var(--error)",
-              boxShadow: "none"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--error)";
-              e.currentTarget.style.color = "white";
-              e.currentTarget.style.boxShadow = "0 4px 16px rgba(239, 68, 68, 0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-              e.currentTarget.style.color = "var(--error)";
-              e.currentTarget.style.boxShadow = "none";
-            }}
+            className="w-full py-4 px-6 text-sm font-bold bg-error/10 border border-error/20 text-error rounded-xl cursor-pointer hover:bg-error hover:text-white hover:shadow-[0_4px_16px_rgba(239,68,68,0.3)] transition-all duration-300"
           >
             Disconnect Wallet
           </button>

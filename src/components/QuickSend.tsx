@@ -25,32 +25,29 @@ export default function QuickSend({ onSelectContact, onAddNew }: QuickSendProps)
   };
 
   return (
-    <div className="quick-send">
-      <h3 className="section-title">Quick Send</h3>
-      <div className="quick-send-list">
-        <button className="quick-send-item add-new" onClick={onAddNew}>
-          <div className="quick-send-avatar add-new-avatar">
+    <div className="flex flex-col gap-3 mb-6">
+      <h3 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Quick Send</h3>
+      <div className="flex gap-4 overflow-x-auto pb-2">
+        <button className="flex flex-col items-center gap-2 bg-transparent border-0 cursor-pointer group" onClick={onAddNew}>
+          <div className="w-12 h-12 rounded-full border border-dashed border-border-theme-hover text-text-muted hover:border-accent-purple hover:text-accent-purple transition-all flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
           </div>
-          <span className="quick-send-name">Add New</span>
+          <span className="text-[10px] font-semibold text-text-secondary w-14 text-center truncate group-hover:text-text-primary transition-colors">Add New</span>
         </button>
         {contacts.map((contact) => (
           <button
             key={contact.id}
-            className="quick-send-item"
+            className="flex flex-col items-center gap-2 bg-transparent border-0 cursor-pointer group"
             onClick={() => onSelectContact(contact)}
           >
             <div
-              className="quick-send-avatar"
+              className="w-12 h-12 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm"
               style={{
                 background: contact.image ? "none" : `linear-gradient(135deg, ${contact.color}, ${contact.color}88)`,
                 overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
               {contact.image ? (
@@ -63,7 +60,7 @@ export default function QuickSend({ onSelectContact, onAddNew }: QuickSendProps)
                 getInitials(contact.name)
               )}
             </div>
-            <span className="quick-send-name">{contact.name.startsWith("@") ? contact.name : `@${contact.name}`}</span>
+            <span className="text-[10px] font-semibold text-text-secondary w-14 text-center truncate group-hover:text-text-primary transition-colors">{contact.name.startsWith("@") ? contact.name : `@${contact.name}`}</span>
           </button>
         ))}
       </div>

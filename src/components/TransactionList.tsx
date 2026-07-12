@@ -68,11 +68,11 @@ export default function TransactionList() {
 
   if (!connected) {
     return (
-      <div className="transaction-list">
-        <div className="section-header">
-          <h3 className="section-title">Recent Transactions</h3>
+      <div className="flex flex-col gap-4 mt-2">
+        <div className="flex justify-between items-center w-full">
+          <h3 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Recent Transactions</h3>
         </div>
-        <div className="transaction-empty">
+        <div className="bg-bg-card border border-border-theme rounded-2xl p-8 flex flex-col items-center justify-center text-center text-text-muted gap-2 min-h-[160px]">
           <p>Connect your wallet to see transactions</p>
         </div>
       </div>
@@ -80,12 +80,12 @@ export default function TransactionList() {
   }
 
   return (
-    <div className="transaction-list">
-      <div className="section-header">
-        <h3 className="section-title">Recent Transactions</h3>
+    <div className="flex flex-col gap-4 mt-2">
+      <div className="flex justify-between items-center w-full">
+        <h3 className="text-xs font-semibold text-text-primary uppercase tracking-wider">Recent Transactions</h3>
         {transactions.length > 5 && (
           <button
-            className="view-all-btn"
+            className="bg-transparent border-0 text-accent-purple cursor-pointer text-xs font-bold transition-opacity hover:opacity-80"
             onClick={() => setShowAll(!showAll)}
           >
             {showAll ? "Show Less" : "View All"}
@@ -94,32 +94,32 @@ export default function TransactionList() {
       </div>
 
       {isLoading ? (
-        <div className="transaction-loading">
+        <div className="flex flex-col gap-2.5">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="transaction-skeleton">
-              <div className="skeleton-avatar shimmer" />
-              <div className="skeleton-content">
-                <div className="skeleton-line shimmer" style={{ width: "60%" }} />
-                <div className="skeleton-line shimmer" style={{ width: "40%" }} />
+            <div key={i} className="flex items-center gap-3 bg-bg-card border border-border-theme rounded-2xl p-4 shimmer">
+              <div className="w-10 h-10 rounded-full bg-bg-secondary" />
+              <div className="flex-1 flex flex-col gap-2">
+                <div className="h-3 rounded bg-bg-secondary" style={{ width: "60%" }} />
+                <div className="h-3 rounded bg-bg-secondary" style={{ width: "40%" }} />
               </div>
-              <div className="skeleton-amount shimmer" />
+              <div className="w-14 h-4 rounded bg-bg-secondary" />
             </div>
           ))}
         </div>
       ) : transactions.length === 0 ? (
-        <div className="transaction-empty">
+        <div className="bg-bg-card border border-border-theme rounded-2xl p-8 flex flex-col items-center justify-center text-center text-text-muted gap-2 min-h-[160px]">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          <p>No transactions yet</p>
-          <p className="transaction-empty-sub">
+          <p className="font-semibold text-sm">No transactions yet</p>
+          <p className="text-xs opacity-70">
             Make a payment or deposit to get started
           </p>
         </div>
       ) : (
-        <div className="transaction-items">
+        <div className="flex flex-col gap-2.5">
           {displayTxs.map((tx) => {
             const counterparty = tx.isIncoming ? tx.from : tx.to;
             const contact = contacts.find((c) => c.address === counterparty);
@@ -132,20 +132,16 @@ export default function TransactionList() {
             return (
               <a
                 key={tx.id}
-                className="transaction-item"
+                className="flex items-center gap-3.5 bg-bg-card border border-border-theme rounded-2xl p-4 transition-all duration-300 text-text-primary hover:bg-bg-card-hover hover:border-border-theme-hover no-underline cursor-pointer"
                 href={`https://stellar.expert/explorer/testnet/tx/${tx.transactionHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <div
-                  className="transaction-avatar"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
                   style={{
                     background: contact?.image ? "none" : `linear-gradient(135deg, ${contact ? contact.color : getAvatarColor(counterparty)}, ${contact ? contact.color : getAvatarColor(counterparty)}88)`,
                     overflow: "hidden",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: 0
                   }}
                 >
                   {contact?.image ? (
@@ -158,14 +154,14 @@ export default function TransactionList() {
                     contact ? getInitials(contact.name) : getInitials(counterparty)
                   )}
                 </div>
-                <div className="transaction-details">
-                  <span className="transaction-counterparty">{displayName}</span>
-                  <span className="transaction-type">
+                <div className="flex-1 flex flex-col gap-0.5 min-w-0">
+                  <span className="text-sm font-semibold truncate">{displayName}</span>
+                  <span className="text-xs text-text-muted">
                     {tx.isIncoming ? "Received" : "Sent"} · {formatTime(tx.createdAt)}
                   </span>
                 </div>
                 <span
-                  className={`transaction-amount ${tx.isIncoming ? "incoming" : "outgoing"}`}
+                  className={`text-sm font-bold flex-shrink-0 font-mono ${tx.isIncoming ? "text-success" : "text-text-primary"}`}
                 >
                   {tx.isIncoming ? "+" : "-"}
                   {parseFloat(tx.amount).toLocaleString("en-US", {

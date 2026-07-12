@@ -28,7 +28,6 @@ export default function AddContactModal({
       return;
     }
 
-    // Skip query if current input matches the already selected user
     if (selectedUser && cleanUsername.toLowerCase() === selectedUser.username.toLowerCase()) {
       setSearchResults([]);
       return;
@@ -41,7 +40,6 @@ export default function AddContactModal({
         const res = await fetch(`/api/users?q=${encodeURIComponent(cleanUsername)}`);
         if (res.ok) {
           const data = await res.json();
-          // Filter out potential duplicates or inactive records
           setSearchResults(data.users || []);
         }
       } catch (err) {
@@ -71,7 +69,6 @@ export default function AddContactModal({
     e.preventDefault();
     setError("");
 
-    // 1. If a valid user is selected from the dropdown, save immediately
     if (selectedUser) {
       addContact(selectedUser.username, selectedUser.stellar_address, selectedUser.profile_image || undefined);
       handleClose();
@@ -79,7 +76,6 @@ export default function AddContactModal({
       return;
     }
 
-    // 2. Fallback: Lookup typed username if user hits enter without clicking dropdown
     const cleanUsername = username.replace("@", "").trim();
     if (!cleanUsername) {
       setError("Please enter or select a username.");
@@ -124,11 +120,11 @@ export default function AddContactModal({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Add Contact</h2>
-          <button className="modal-close" onClick={handleClose}>
+    <div className="fixed inset-0 bg-[#132e22]/40 backdrop-blur-sm flex items-center justify-center z-[1000] p-6 animate-[fadeIn_0.2s_ease]" onClick={handleClose}>
+      <div className="bg-bg-card border border-border-theme rounded-3xl w-full max-w-[440px] shadow-2xl flex flex-col overflow-hidden animate-[slideUp_0.3s_ease]" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center px-6 pt-6">
+          <h2 className="text-lg font-bold text-text-primary">Add Contact</h2>
+          <button className="bg-transparent border-0 text-text-muted cursor-pointer p-1 flex items-center justify-center rounded-full hover:bg-bg-hover hover:text-text-primary transition-all duration-200" onClick={handleClose}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -136,12 +132,12 @@ export default function AddContactModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-form" style={{ position: "relative" }}>
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5 relative">
           
-          <div className="form-group" style={{ marginBottom: "20px", position: "relative" }}>
-            <label>Username</label>
-            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-              <span style={{ position: "absolute", left: "14px", color: "rgba(255, 255, 255, 0.4)", fontSize: "16px", fontWeight: "600", userSelect: "none" }}>@</span>
+          <div className="flex flex-col gap-2 w-full relative">
+            <label className="text-xs font-semibold text-text-secondary">Username</label>
+            <div className="relative flex items-center w-full">
+              <span className="absolute left-3.5 text-text-muted text-base font-semibold select-none">@</span>
               <input
                 type="text"
                 placeholder="e.g., alice"
@@ -152,8 +148,7 @@ export default function AddContactModal({
                     setSelectedUser(null);
                   }
                 }}
-                className="form-input"
-                style={{ paddingLeft: "30px", width: "100%", paddingRight: selectedUser ? "40px" : "12px" }}
+                className="w-full bg-bg-secondary border border-border-theme rounded-xl py-3.5 pl-8 pr-10 text-sm outline-none focus:border-accent-purple/50 focus:ring-4 focus:ring-accent-purple/10 text-text-primary transition-all duration-300 focus:bg-bg-card"
                 autoComplete="off"
                 autoFocus
               />
@@ -161,21 +156,7 @@ export default function AddContactModal({
                 <button
                   type="button"
                   onClick={handleDeselectUser}
-                  style={{
-                    position: "absolute",
-                    right: "12px",
-                    background: "rgba(255,255,255,0.08)",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "20px",
-                    height: "20px",
-                    color: "rgba(255,255,255,0.6)",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "10px"
-                  }}
+                  className="absolute right-3 bg-text-muted/10 border-none rounded-full w-5 h-5 text-text-muted cursor-pointer flex items-center justify-center text-[10px]"
                   title="Clear selection"
                 >
                   ✕
@@ -185,54 +166,19 @@ export default function AddContactModal({
 
             {/* Dynamic Dropdown for User Matching */}
             {searchResults.length > 0 && !selectedUser && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "100%",
-                  left: 0,
-                  right: 0,
-                  background: "#161b40",
-                  border: "1px solid rgba(255, 255, 255, 0.15)",
-                  borderRadius: "12px",
-                  marginTop: "6px",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
-                  zIndex: 200,
-                  maxHeight: "180px",
-                  overflowY: "auto",
-                  padding: "6px"
-                }}
-              >
+              <div className="absolute top-[calc(100%_+_6px)] left-0 right-0 bg-bg-card border border-border-theme rounded-xl shadow-2xl z-[200] max-h-[180px] overflow-y-auto p-1.5 flex flex-col gap-1">
                 {searchResults.map((user) => {
                   const initials = user.username.slice(0, 2).toUpperCase();
                   return (
                     <div
                       key={user.id}
                       onClick={() => handleSelectUser(user)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                        padding: "10px 12px",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        transition: "background 0.2s"
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
-                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                      className="flex items-center gap-3 p-2 rounded-lg cursor-pointer bg-transparent hover:bg-bg-hover transition-colors duration-150"
                     >
                       <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 overflow-hidden"
                         style={{
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "50%",
-                          background: user.profile_image ? "none" : "linear-gradient(135deg, #a855f7, #3b82f6)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          overflow: "hidden",
-                          fontSize: "12px",
-                          fontWeight: "700",
-                          flexShrink: 0
+                          background: user.profile_image ? "none" : "linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-indigo))",
                         }}
                       >
                         {user.profile_image ? (
@@ -245,9 +191,9 @@ export default function AddContactModal({
                           initials
                         )}
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                        <span style={{ fontSize: "14px", fontWeight: "600", color: "white" }}>@{user.username}</span>
-                        <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-semibold text-text-primary">@{user.username}</span>
+                        <span className="text-[10px] text-text-muted font-mono overflow-hidden text-ellipsis whitespace-nowrap">
                           {user.stellar_address}
                         </span>
                       </div>
@@ -260,32 +206,11 @@ export default function AddContactModal({
 
           {/* Validated Selected User Preview Card */}
           {selectedUser && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "16px",
-                padding: "14px 16px",
-                borderRadius: "16px",
-                background: "rgba(34, 197, 94, 0.08)",
-                border: "1px solid rgba(34, 197, 94, 0.15)",
-                marginBottom: "20px",
-                animation: "fadeIn 0.2s ease"
-              }}
-            >
+            <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-success/8 border border-success/15 animate-[fadeIn_0.2s_ease]">
               <div
+                className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 overflow-hidden"
                 style={{
-                  width: "44px",
-                  height: "44px",
-                  borderRadius: "50%",
-                  background: selectedUser.profile_image ? "none" : "linear-gradient(135deg, #a855f7, #3b82f6)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                  fontSize: "14px",
-                  fontWeight: "700",
-                  flexShrink: 0
+                  background: selectedUser.profile_image ? "none" : "linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-indigo))",
                 }}
               >
                 {selectedUser.profile_image ? (
@@ -298,34 +223,20 @@ export default function AddContactModal({
                   selectedUser.username.slice(0, 2).toUpperCase()
                 )}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: "15px", fontWeight: "700", color: "#fff" }}>@{selectedUser.username}</span>
-                <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-sm font-bold text-text-primary">@{selectedUser.username}</span>
+                <span className="text-[10px] text-text-muted font-mono overflow-hidden text-ellipsis whitespace-nowrap">
                   {selectedUser.stellar_address.slice(0, 8)}...{selectedUser.stellar_address.slice(-8)}
                 </span>
               </div>
-              <div
-                style={{
-                  width: "22px",
-                  height: "22px",
-                  borderRadius: "50%",
-                  background: "#22c55e",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "white",
-                  fontSize: "11px",
-                  fontWeight: "bold",
-                  flexShrink: 0
-                }}
-              >
+              <div className="w-5.5 h-5.5 rounded-full bg-success flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0">
                 ✓
               </div>
             </div>
           )}
 
           {error && (
-            <div className="form-error" style={{ marginBottom: "20px" }}>
+            <div className="text-sm text-error bg-error/8 border border-error/15 rounded-xl p-3 flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
@@ -335,7 +246,7 @@ export default function AddContactModal({
             </div>
           )}
 
-          <button type="submit" className="btn btn-primary btn-full" disabled={isSearching}>
+          <button type="submit" className="w-full py-4 px-6 text-sm font-bold bg-gradient-to-r from-accent-purple to-accent-indigo text-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled={isSearching}>
             {selectedUser ? "Save Contact" : isSearching ? "Searching..." : "Search & Save"}
           </button>
         </form>

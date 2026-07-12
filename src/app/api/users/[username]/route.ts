@@ -1,26 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserByUsername } from "@/lib/db";
+import { supabase } from "@/lib/supabase";
 
-// GET /api/users/[username] — Get user by username
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ username: string }> }
 ) {
   try {
     const { username } = await params;
-    const user = getUserByUsername(username);
+    const normalizedUsername = username.toLowerCase();
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+    // Check usernames_cache
+    const { data: cacheData } = await supabase
+      .from("usernames_cache")
+      .select("*")
+      .eq("username", normalizedUsername)
+      .maybeSingle();
+
+    if (cacheData) {
+      return NextResponse.json({
+        user: {
+          username: cacheData.username,
+          stellar_address: cacheData.owner_address,
+        },
+        source: "cache",
+      });
     }
 
-    return NextResponse.json({ user });
-  } catch {
+    // Check usernames_pending
+    const { data: pendingData } = await supabase
+      .from("usernames_pending")
+      .select("*")
+      .eq("username", normalizedUsername)
+      .maybeSingle();
+
+    if (pendingData) {
+      return NextResponse.json({
+        user: {
+          username: pendingData.username,
+          stellar_address: pendingData.owner_address,
+        },
+        source: "pending",
+      });
+    }
+
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  } catch (error: any) {
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: error.message || "Internal server error" },
       { status: 500 }
     );
   }

@@ -3,28 +3,38 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3002 --experimental-https",
+    "dev": "concurrently \"next dev -p 3002 --experimental-https\" \"NODE_OPTIONS=\\\"--experimental-websocket\\\" tsx src/lib/indexer.ts\"",
     "build": "next build",
     "start": "next start -p 3002",
-    "lint": "eslint"
+    "lint": "eslint",
+    "indexer": "NODE_OPTIONS=\"--experimental-websocket\" tsx src/lib/indexer.ts"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@stellar/freighter-api": "^6.0.1",
     "@stellar/stellar-sdk": "^15.1.0",
+    "@supabase/supabase-js": "^2.109.0",
+    "@tailwindcss/postcss": "^4.3.2",
     "better-sqlite3": "^12.11.1",
+    "dotenv": "^17.4.2",
+    "gsap": "^3.15.0",
     "html5-qrcode": "^2.3.8",
     "next": "16.2.10",
+    "postcss": "^8.5.16",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "tailwindcss": "^4.3.2"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "ts-node": "^10.9.2",
+    "tsx": "^4.23.0",
     "typescript": "^5"
   }
 }

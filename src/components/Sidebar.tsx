@@ -49,18 +49,14 @@ export default function Sidebar({ onOpenProfile }: { onOpenProfile?: () => void 
   };
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-logo">
-        <div className="logo-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polygon points="12 2 2 22 22 22" />
-          </svg>
-        </div>
-        <span className="logo-text">StellarPay</span>
+    <aside className="hidden md:flex fixed top-0 left-0 w-[280px] h-screen bg-bg-secondary border-r border-border-theme p-8 flex-col z-[100] xl:sticky">
+      <div className="flex items-center gap-3 mb-10 px-2">
+        <img src="/logo.png" alt="enteveed logo" className="w-9 h-9 object-contain" />
+        <span className="text-xl font-extrabold text-[#132e22] tracking-tight">enteveed</span>
       </div>
 
-      <nav className="sidebar-nav">
-        <Link className="sidebar-link active" href="/">
+      <nav className="flex flex-col gap-1.5 flex-1">
+        <Link className="flex items-center gap-3 py-3 px-4 rounded-xl text-accent-purple font-bold bg-bg-card border border-border-theme border-l-3 border-l-accent-purple rounded-l-none text-sm transition-all duration-300" href="/">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="3" width="7" height="9" />
             <rect x="14" y="3" width="7" height="5" />
@@ -72,38 +68,38 @@ export default function Sidebar({ onOpenProfile }: { onOpenProfile?: () => void 
       </nav>
 
       {connected && address && (
-        <div className="sidebar-footer">
-          <div className="sidebar-network-card">
-            <div className="network-dot" />
-            <span>Testnet</span>
+        <div className="flex flex-col gap-3 pt-4 border-t border-border-theme">
+          <div className="bg-bg-card border border-border-theme rounded-xl py-2.5 px-3.5 flex items-center gap-2.5">
+            <div className="w-2 h-2 rounded-full bg-success" />
+            <span className="text-xs font-semibold text-text-secondary">Testnet</span>
           </div>
 
-          <div className="sidebar-account-switcher" onClick={onOpenProfile} style={{ cursor: onOpenProfile ? "pointer" : "default" }}>
-            <div className="switcher-info">
-              <div className="switcher-avatar">
+          <div className="flex items-center justify-between p-2.5 bg-bg-card border border-border-theme rounded-xl gap-2 transition-all duration-300 hover:border-border-theme-hover" onClick={onOpenProfile} style={{ cursor: onOpenProfile ? "pointer" : "default" }}>
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="w-8 h-8 rounded-full bg-accent-purple flex items-center justify-center text-xs font-bold text-white flex-shrink-0 overflow-hidden border border-border-theme">
                 {profileImage ? (
-                  <img src={profileImage} alt="User Avatar" />
+                  <img className="w-full h-full object-cover" src={profileImage} alt="User Avatar" />
                 ) : (
                   getInitials(username || address)
                 )}
               </div>
-              <div className="switcher-details">
-                <span className="switcher-name">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[13px] font-semibold text-text-primary truncate">
                   {username ? `@${username}` : "Account 1"}
                 </span>
-                <span className="switcher-address">
+                <span className="text-[11px] text-text-muted font-mono">
                   {formatAddress(address)}
                 </span>
               </div>
             </div>
-            <div className="switcher-actions">
+            <div className="flex gap-1">
               <button
                 onClick={handleCopyAddress}
-                className="switcher-btn"
+                className="bg-transparent border-0 text-text-muted cursor-pointer p-1 rounded-md flex items-center justify-center transition-all duration-200 hover:text-text-primary hover:bg-bg-hover"
                 title={copied ? "Address Copied!" : "Copy Address"}
               >
                 {copied ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2.5">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 ) : (
@@ -118,7 +114,7 @@ export default function Sidebar({ onOpenProfile }: { onOpenProfile?: () => void 
                   e.stopPropagation();
                   disconnectWallet();
                 }}
-                className="switcher-btn disconnect"
+                className="bg-transparent border-0 text-text-muted cursor-pointer p-1 rounded-md flex items-center justify-center transition-all duration-200 hover:text-error hover:bg-error/10"
                 title="Disconnect Wallet"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

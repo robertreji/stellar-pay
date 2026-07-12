@@ -56,20 +56,16 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
     setPaymentHash("");
 
     try {
-      // 1. Get SEP-10 Auth Token
       const token = await authenticateWithAnchor(address, secretKey);
       tokenRef.current = token;
 
-      // 2. Initiate Interactive Withdraw
       const res = await initiateWithdraw(address, secretKey, "USDC", amount);
       setInteractiveUrl(res.url);
       setTransactionId(res.id);
       setStep("interactive");
 
-      // 3. Open interactive URL in a new window/tab safely (bypasses iframe SAMEDOMAIN policies)
       window.open(res.url, "_blank");
 
-      // 4. Start Polling the anchor transaction status
       startPolling(token, res.id);
     } catch (err: any) {
       console.error(err);
@@ -127,8 +123,6 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
 
       const asset = new StellarSdk.Asset("USDC", usdcIssuer || undefined);
 
-
-      // We build with dynamic memo
       const memoType = details.withdraw_memo_type;
       const memoValue = details.withdraw_memo;
 
@@ -142,7 +136,6 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
           memoObj = StellarSdk.Memo.hash(memoValue);
         }
       }
-
 
       const txBuilder = new StellarSdk.TransactionBuilder(
         new StellarSdk.Account(address, account.sequence),
@@ -169,7 +162,6 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
 
       const signedXdr = tx.toXDR();
 
-      // Submit payment
       const result = await submitClassicTransaction(signedXdr);
       setPaymentHash(result.hash);
       
@@ -191,11 +183,11 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Anchor Platform Withdrawal</h2>
-          <button className="modal-close" onClick={handleClose}>
+    <div className="fixed inset-0 bg-[#132e22]/40 backdrop-blur-sm flex items-center justify-center z-[1000] p-6 animate-[fadeIn_0.2s_ease]" onClick={handleClose}>
+      <div className="bg-bg-card border border-border-theme rounded-3xl w-full max-w-[480px] shadow-2xl flex flex-col overflow-hidden animate-[slideUp_0.3s_ease]" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center px-6 pt-6">
+          <h2 className="text-lg font-bold text-text-primary">Anchor Platform Withdrawal</h2>
+          <button className="bg-transparent border-0 text-text-muted cursor-pointer p-1 flex items-center justify-center rounded-full hover:bg-bg-hover hover:text-text-primary transition-all duration-200" onClick={handleClose}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -203,83 +195,78 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
           </button>
         </div>
 
-        <div className="withdraw-modal-body">
+        <div className="p-6">
           {step === "idle" && (
-            <div className="deposit-content">
-              <div className="deposit-info">
-                <div className="deposit-icon-large" style={{ background: "var(--gradient-accent)", color: "#fff" }}>
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M12 2v20" />
-                    <polyline points="5 9 12 2 19 9" />
-                  </svg>
-                </div>
-                <h3>Interactive USD Withdrawal</h3>
-                <p>
-                  Withdraw USDC to your real bank account using the Anchor Platform.
-                </p>
+            <div className="flex flex-col items-center text-center gap-5">
+              <div className="w-16 h-16 rounded-full bg-accent-purple/10 text-accent-purple flex items-center justify-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M12 2v20" />
+                  <polyline points="5 9 12 2 19 9" />
+                </svg>
               </div>
-              <div style={{ marginBottom: "20px" }}>
-                <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "var(--color-text-secondary)" }}>
+              <h3 className="text-base font-bold text-text-primary">Interactive USD Withdrawal</h3>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Withdraw USDC to your real bank account using the Anchor Platform.
+              </p>
+              <div className="w-full text-left">
+                <label className="block mb-2 text-xs font-semibold text-text-secondary">
                   Withdrawal Amount (USDC)
                 </label>
                 <input
                   type="number"
-                  className="modal-input"
+                  className="w-full bg-bg-secondary border border-border-theme rounded-xl py-3.5 px-4 text-sm outline-none focus:border-accent-purple/50 focus:ring-4 focus:ring-accent-purple/10 text-text-primary transition-all duration-300 mb-5 focus:bg-bg-card"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Enter amount"
-                  style={{ width: "100%", padding: "12px", borderRadius: "12px", border: "1px solid var(--color-border)", background: "var(--color-bg-secondary)", color: "var(--color-text)", fontSize: "16px" }}
                 />
               </div>
-              <button className="btn btn-primary btn-full" onClick={startFlow}>
+              <button className="w-full py-4 px-6 text-sm font-bold bg-gradient-to-r from-accent-purple to-accent-indigo text-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300" onClick={startFlow}>
                 Start Anchor Withdrawal
               </button>
             </div>
           )}
 
           {step === "initializing" && (
-            <div className="onboarding-loading">
+            <div className="flex flex-col items-center text-center py-8 gap-4">
               <div className="progress-spinner large-spinner" />
-              <h3 className="loading-status">Connecting with Anchor Platform...</h3>
-              <p className="loading-sub">Authenticating secure transaction handshake via SEP-10...</p>
+              <h3 className="text-lg font-bold text-text-primary">Connecting with Anchor Platform...</h3>
+              <p className="text-xs text-text-secondary leading-relaxed">Authenticating secure transaction handshake via SEP-10...</p>
             </div>
           )}
 
           {step === "interactive" && interactiveUrl && (
-            <div className="onboarding-loading">
-              <div className="welcome-step" style={{ margin: "20px 0" }}>
-                <div className="logo-icon-large" style={{ background: "var(--gradient-accent)", margin: "0 auto 20px" }}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-                    <polyline points="15,3 21,3 21,9" />
-                    <line x1="10" y1="14" x2="21" y2="3" />
-                  </svg>
-                </div>
-                <h3 className="loading-status">Portal Opened in New Tab</h3>
-                <p className="loading-sub" style={{ marginBottom: "24px" }}>
-                  We've opened the Anchor portal in a new browser tab. Please complete their form to continue.
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
-                  <button
-                    onClick={() => window.open(interactiveUrl, "_blank")}
-                    className="btn btn-primary btn-full"
-                  >
-                    Re-open Portal Tab
-                  </button>
-                  <div className="interactive-status-bar" style={{ justifyContent: "center" }}>
-                    <div className="progress-spinner" style={{ width: 14, height: 14 }} />
-                    <span>Waiting for your input in the other tab...</span>
-                  </div>
+            <div className="flex flex-col items-center text-center py-8 gap-4">
+              <div className="w-16 h-16 rounded-full bg-accent-purple/10 text-accent-purple flex items-center justify-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                  <polyline points="15,3 21,3 21,9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-text-primary">Portal Opened in New Tab</h3>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                We've opened the Anchor portal in a new browser tab. Please complete their form to continue.
+              </p>
+              <div className="flex flex-col gap-3 w-full">
+                <button
+                  onClick={() => window.open(interactiveUrl, "_blank")}
+                  className="w-full py-4 px-6 text-sm font-bold bg-gradient-to-r from-accent-purple to-accent-indigo text-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
+                >
+                  Re-open Portal Tab
+                </button>
+                <div className="flex items-center gap-3 bg-bg-card border border-border-theme rounded-xl p-4 text-sm text-text-secondary mt-3">
+                  <div className="progress-spinner" style={{ width: 14, height: 14 }} />
+                  <span>Waiting for your input in the other tab...</span>
                 </div>
               </div>
             </div>
           )}
 
           {step === "paying" && (
-            <div className="onboarding-loading">
+            <div className="flex flex-col items-center text-center py-8 gap-4">
               <div className="progress-spinner large-spinner" />
-              <h3 className="loading-status">Submitting USDC Payment...</h3>
-              <p className="loading-sub">
+              <h3 className="text-lg font-bold text-text-primary">Submitting USDC Payment...</h3>
+              <p className="text-xs text-text-secondary leading-relaxed">
                 Interactive registration complete! Transferring{" "}
                 <strong>{withdrawDetails?.amount_in} USDC</strong> directly on-chain to Anchor...
               </p>
@@ -287,43 +274,43 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
           )}
 
           {step === "success" && (
-            <div className="modal-success">
-              <div className="success-icon">
+            <div className="flex flex-col items-center text-center p-6 gap-4">
+              <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2">
                   <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                   <polyline points="22,4 12,14.01 9,11.01" />
                 </svg>
               </div>
-              <h3>Withdrawal Initiated!</h3>
-              <p>USDC payment successfully transferred to Anchor.</p>
+              <h3 className="text-lg font-bold text-text-primary">Withdrawal Initiated!</h3>
+              <p className="text-xs text-text-secondary">USDC payment successfully transferred to Anchor.</p>
               {paymentHash && (
                 <a
                   href={`https://stellar.expert/explorer/testnet/tx/${paymentHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="success-link"
+                  className="text-xs text-accent-purple hover:underline"
                 >
                   View Payment Ledger →
                 </a>
               )}
-              <button className="btn btn-primary" onClick={handleClose}>
+              <button className="w-full py-4 px-6 text-sm font-bold bg-gradient-to-r from-accent-purple to-accent-indigo text-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300" onClick={handleClose}>
                 Done
               </button>
             </div>
           )}
 
           {step === "error" && (
-            <div className="modal-error-view">
-              <div className="error-icon">
+            <div className="flex flex-col items-center text-center p-6 gap-4">
+              <div className="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
               </div>
-              <h3>Withdrawal Failed</h3>
-              <p>{errorMsg}</p>
-              <button className="btn btn-primary" onClick={startFlow}>
+              <h3 className="text-lg font-bold text-text-primary">Withdrawal Failed</h3>
+              <p className="text-xs text-text-secondary">{errorMsg}</p>
+              <button className="w-full py-4 px-6 text-sm font-bold bg-gradient-to-r from-accent-purple to-accent-indigo text-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300" onClick={startFlow}>
                 Try Again
               </button>
             </div>
