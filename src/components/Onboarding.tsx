@@ -760,59 +760,7 @@ export default function Onboarding() {
       </footer>
 
       {/* Sticky Bottom Nav (Mobile Only) */}
-      <nav className="flex md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#1b4332]/8 py-2.5 px-4 pb-safe justify-around items-center z-[1000]">
-        <button
-          className={`flex flex-col items-center gap-1 py-1 px-3 text-xs font-bold transition-colors cursor-pointer bg-transparent border-0 ${
-            activeTab === "send" ? "text-[#1b4332]" : "text-[#4a534e]"
-          }`}
-          onClick={() => scrollToSection("hero", "send")}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" />
-          </svg>
-          <span>Send</span>
-        </button>
-        <button
-          className={`flex flex-col items-center gap-1 py-1 px-3 text-xs font-bold transition-colors cursor-pointer bg-transparent border-0 ${
-            activeTab === "track" ? "text-[#1b4332]" : "text-[#4a534e]"
-          }`}
-          onClick={() => scrollToSection("why-us", "track")}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-            <polyline points="16 7 22 7 22 13" />
-          </svg>
-          <span>Why Us</span>
-        </button>
-        <button
-          className={`flex flex-col items-center gap-1 py-1 px-3 text-xs font-bold transition-colors cursor-pointer bg-transparent border-0 ${
-            activeTab === "recipients" ? "text-[#1b4332]" : "text-[#4a534e]"
-          }`}
-          onClick={() => scrollToSection("comparison", "recipients")}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-          <span>Compare</span>
-        </button>
-        <button
-          className={`flex flex-col items-center gap-1 py-1 px-3 text-xs font-bold transition-colors cursor-pointer bg-transparent border-0 ${
-            activeTab === "more" ? "text-[#1b4332]" : "text-[#4a534e]"
-          }`}
-          onClick={() => scrollToSection("footer", "more")}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="19" cy="12" r="1" />
-            <circle cx="5" cy="12" r="1" />
-          </svg>
-          <span>Partners</span>
-        </button>
-      </nav>
+
     </div>
   );
 }

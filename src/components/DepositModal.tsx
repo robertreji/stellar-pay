@@ -15,12 +15,10 @@ interface DepositModalProps {
   onClose: () => void;
 }
 
-type DepositMethod = "friendbot" | "anchor";
 type DepositStep = "idle" | "initializing" | "interactive" | "success" | "error";
 
 export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
   const { address, secretKey, refreshBalances } = useWallet();
-  const [method, setMethod] = useState<DepositMethod>("friendbot");
   const [step, setStep] = useState<DepositStep>("idle");
   const [amount, setAmount] = useState("10");
   const [interactiveUrl, setInteractiveUrl] = useState("");
@@ -28,6 +26,11 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
   const [errorMsg, setErrorMsg] = useState("");
   const [transactionId, setTransactionId] = useState("");
   const [depositDetails, setDepositDetails] = useState<AnchorTransaction | null>(null);
+  const [exchangeRates, setExchangeRates] = useState<{
+    usdToInr: number;
+    aedToInr: number;
+  } | null>(null);
+  const [copiedAddress, setCopiedAddress] = useState(false);
 
   const pollerRef = useRef<NodeJS.Timeout | null>(null);
   const tokenRef = useRef<string>("");
@@ -52,6 +55,50 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
     ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=${encodeURIComponent(interactivePortalUrl)}`
     : "";
 
+  const getDepositConversion = () => {
+    if (!exchangeRates || !amount || isNaN(parseFloat(amount))) {
+      return {
+        aedToUsd: 0.2723,
+        usdcRaw: 0,
+        fee: 0,
+        receiveUsdc: 0,
+      };
+    }
+    const rawAmountAed = parseFloat(amount);
+    // AED -> USD rate = aedToInr / usdToInr
+    const aedToUsd = exchangeRates.aedToInr / exchangeRates.usdToInr;
+    const usdcRaw = rawAmountAed * aedToUsd;
+    const fee = usdcRaw * 0.0075;
+    const receiveUsdc = usdcRaw - fee;
+
+    return {
+      aedToUsd,
+      usdcRaw,
+      fee,
+      receiveUsdc,
+    };
+  };
+
+  const conversion = getDepositConversion();
+
+  const handleCopyAddress = async () => {
+    if (!address) return;
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2000);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = address;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2000);
+    }
+  };
+
   useEffect(() => {
     return () => {
       stopPolling();
@@ -75,20 +122,21 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
     loadLocalIp();
   }, []);
 
-  const handleFriendbotDeposit = async () => {
-    if (!address) return;
-    setStep("initializing");
-    setErrorMsg("");
-    try {
-      await fundWithFriendbot(address);
-      setStep("success");
-      await refreshBalances();
-    } catch (err: unknown) {
-      const error = err as Error;
-      setErrorMsg(error.message || "Friendbot funding failed");
-      setStep("error");
-    }
-  };
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const res = await fetch("/api/exchange-rate");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.success && data.rates) {
+          setExchangeRates(data.rates);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch exchange rates for deposit calculator:", err);
+      }
+    };
+    fetchRates();
+  }, []);
 
   const handleAnchorDeposit = async () => {
     if (!address || !secretKey) return;
@@ -104,8 +152,9 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
       console.log("Got token:", token);
       tokenRef.current = token;
 
-      console.log("Calling initiateDeposit with amount:", amount);
-      const res = await initiateDeposit(address, secretKey, "USDC", amount);
+      const usdcAmount = conversion.receiveUsdc.toFixed(2);
+      console.log("Calling initiateDeposit with final USDC amount:", usdcAmount);
+      const res = await initiateDeposit(address, secretKey, "USDC", usdcAmount);
       console.log("Got initiateDeposit response:", res);
       setInteractiveUrl(res.url);
       setTransactionId(res.id);
@@ -169,11 +218,22 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
 
   return (
     <div className="fixed inset-0 bg-[#132e22]/40 backdrop-blur-sm flex items-center justify-center z-[1000] p-6 animate-[fadeIn_0.2s_ease]" onClick={handleClose}>
-      <div className="bg-bg-card border border-border-theme rounded-3xl w-full max-w-[500px] shadow-2xl flex flex-col overflow-hidden animate-[slideUp_0.3s_ease]" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-center px-6 pt-6">
-          <h2 className="text-lg font-bold text-text-primary">Deposit Funds</h2>
-          <button className="bg-transparent border-0 text-text-muted cursor-pointer p-1 flex items-center justify-center rounded-full hover:bg-bg-hover hover:text-text-primary transition-all duration-200" onClick={handleClose}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <div className="bg-white border border-border-theme rounded-3xl w-full max-w-[500px] shadow-2xl flex flex-col overflow-hidden animate-[slideUp_0.3s_ease]" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-start px-6 pt-6 pb-2">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-[#113C2F]/10 text-[#113C2F] flex items-center justify-center shrink-0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <polyline points="19,12 12,19 5,12" />
+              </svg>
+            </div>
+            <div className="flex flex-col">
+              <h2 className="text-xl font-extrabold text-[#113C2F] leading-tight">Top-Up your wallet</h2>
+              <span className="text-[11px] text-text-muted">Convert AED to USDC via Anchor Platform</span>
+            </div>
+          </div>
+          <button className="bg-[#f4f2ea] border-0 text-text-muted cursor-pointer w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#113C2F]/5 hover:text-text-primary transition-all duration-200 shrink-0" onClick={handleClose}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -183,100 +243,151 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
         <div className="p-6">
           {step === "idle" && (
             <div className="flex flex-col">
-              <div className="flex gap-2.5 mb-5">
+              <div className="flex flex-col items-center text-center gap-5">
+                  <div className="w-20 h-16 shrink-0 relative flex items-center justify-end z-10">
+                    <img
+                      src="/bank_deposit_illustration.png"
+                      alt="Bank Illustration"
+                      className="h-full w-auto object-contain"
+                    />
+                  </div>
+
+                <div className="w-full text-left mb-2">
+                  <label className="block mb-2 text-[10px] font-bold text-text-secondary uppercase tracking-wider">
+                    Deposit Amount (AED)
+                  </label>
+                  <div className="relative flex items-center w-full bg-bg-secondary border border-border-theme focus-within:border-[#113C2F] focus-within:ring-4 focus-within:ring-[#113C2F]/10 rounded-2xl py-2 pl-3 pr-12 transition-all duration-300">
+                    <div className="bg-[#f4f2ea] text-text-primary text-[10px] font-extrabold px-3 py-2 rounded-xl select-none mr-3 border border-border-theme">
+                      AED
+                    </div>
+                    <input
+                      type="number"
+                      className="w-full bg-transparent border-0 py-2.5 text-base font-extrabold outline-none text-text-primary"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="100.00"
+                      style={{ fontSize: "16px" }}
+                    />
+                    <div className="absolute right-4 text-text-muted flex items-center">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <line x1="12" y1="4" x2="12" y2="20" />
+                        <circle cx="12" cy="12" r="4" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {parseFloat(amount) > 0 && (
+                  <div className="w-full bg-[#fbfbfa] border border-[#113C2F]/10 rounded-2xl p-4 flex flex-col gap-4 text-xs mb-2">
+                    {/* Exchange Rate Row */}
+                    <div className="flex items-center justify-between gap-2 w-full">
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-emerald-600/5 text-emerald-600 flex items-center justify-center shrink-0">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                          </svg>
+                        </div>
+                        <span className="text-[11px] text-text-secondary font-medium">Exchange Rate </span>
+                      </div>
+                      <div className="flex-grow border-b border-dashed border-border-theme mx-1 min-w-[20px] self-end mb-1"></div>
+                      <span className="font-extrabold text-[#113C2F] shrink-0 text-[11px]">1 AED ≈ {conversion.aedToUsd.toFixed(4)} USDC</span>
+                    </div>
+
+                    {/* Raw USDC Row */}
+                    <div className="flex items-center justify-between gap-2 w-full">
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-emerald-600/5 text-emerald-600 flex items-center justify-center shrink-0">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <circle cx="8" cy="8" r="6" />
+                            <circle cx="18" cy="18" r="4" />
+                          </svg>
+                        </div>
+                        <span className="text-[11px] text-text-secondary font-medium">Raw USDC Amount</span>
+                      </div>
+                      <div className="flex-grow border-b border-dashed border-border-theme mx-1 min-w-[20px] self-end mb-1"></div>
+                      <span className="font-extrabold text-text-primary shrink-0 text-[11px]">{conversion.usdcRaw.toFixed(2)} USDC</span>
+                    </div>
+
+                    {/* Platform Fee Row */}
+                    <div className="flex items-center justify-between gap-2 w-full">
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-red-500/5 text-gray-700 flex items-center justify-center shrink-0">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <line x1="19" y1="5" x2="5" y2="19" />
+                            <circle cx="6.5" cy="6.5" r="2.5" />
+                            <circle cx="17.5" cy="17.5" r="2.5" />
+                          </svg>
+                        </div>
+                        <span className="text-[11px] text-gray-700 font-semibold">Platform Fee (0.75%)</span>
+                      </div>
+                      <div className="flex-grow border-b border-dashed border-border-theme mx-1 min-w-[20px] self-end mb-1"></div>
+                      <span className="font-extrabold text-violet-600 shrink-0 text-[11px]">-{conversion.fee.toFixed(2)} USDC</span>
+                    </div>
+
+                    <div className="border-t border-[#113C2F]/10 my-0.5"></div>
+
+                    {/* Final "You will receive" Box */}
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#113C2F]/10 text-[#113C2F] flex items-center justify-center shrink-0">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                            <line x1="12" y1="4" x2="12" y2="20" />
+                            <circle cx="12" cy="12" r="4" />
+                          </svg>
+                        </div>
+                        <span className="text-xs font-extrabold text-text-primary">You will receive</span>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-xl font-black text-[#0b3d3b]">{conversion.receiveUsdc.toFixed(2)} USDC</span>
+                        <span className="inline-flex items-center gap-1 py-0.5 px-2 rounded-full bg-[#113C2F]/5 text-[9px] font-extrabold text-[#113C2F]">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          Secure & Fast
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <button
-                  className={`flex-1 py-3 px-4 text-xs font-bold rounded-xl cursor-pointer transition-all duration-300 ${
-                    method === "friendbot"
-                      ? "bg-accent-purple text-white shadow-lg"
-                      : "bg-bg-secondary border border-border-theme text-text-secondary hover:bg-bg-card-hover"
-                  }`}
-                  onClick={() => setMethod("friendbot")}
+                  className="w-full py-4 px-6 rounded-2xl cursor-pointer bg-green-600 text-white flex flex-col items-center justify-center gap-0.5 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-0 font-bold shadow-md shadow-[#113C2F]/10"
+                  onClick={handleAnchorDeposit}
+                  disabled={!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0}
                 >
-                  Friendbot (XLM)
-                </button>
-                <button
-                  className={`flex-1 py-3 px-4 text-xs font-bold rounded-xl cursor-pointer transition-all duration-300 ${
-                    method === "anchor"
-                      ? "bg-accent-purple text-white shadow-lg"
-                      : "bg-bg-secondary border border-border-theme text-text-secondary hover:bg-bg-card-hover"
-                  }`}
-                  onClick={() => setMethod("anchor")}
-                >
-                  Anchor Platform (USDC)
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg tracking-wide">Top-Up </span>
+                  </div>
+                  <span className="text-[10px] text-white/70 font-medium">Proceed to secure bank details</span>
                 </button>
               </div>
 
-              {method === "friendbot" ? (
-                <div className="flex flex-col items-center text-center gap-5">
-                  <div className="w-16 h-16 rounded-full bg-accent-purple/10 text-accent-purple flex items-center justify-center">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M8 12l4 4 4-4" />
-                      <path d="M12 8v8" />
-                    </svg>
-                  </div>
-                  <h3 className="text-base font-bold text-text-primary">Stellar Testnet Faucet</h3>
-                  <p className="text-xs text-text-secondary leading-relaxed">
-                    Fund your testnet account with 10,000 XLM from the Stellar
-                    Friendbot. This is free testnet XLM for development.
-                  </p>
-                  {address && (
-                    <div className="flex flex-col gap-2 w-full bg-bg-secondary border border-border-theme rounded-xl p-4 text-left">
-                      <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Your Address</span>
-                      <span className="text-xs text-text-primary font-mono break-all leading-relaxed">
-                        {address}
-                      </span>
-                    </div>
-                  )}
-                  <button
-                    className="w-full py-4 px-6 text-sm font-bold bg-gradient-to-r from-accent-purple to-accent-indigo text-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
-                    onClick={handleFriendbotDeposit}
-                  >
-                    Fund with Friendbot
-                  </button>
+              {/* Modal Footer */}
+              <div className="flex items-center justify-between w-full mt-6 px-1 text-[9px] text-text-muted font-bold tracking-wider uppercase border-t border-border-theme/40 pt-4">
+                <div className="flex items-center gap-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-[#113C2F] shrink-0">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  <span>Secure & Encrypted</span>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center text-center gap-5">
-                  <div className="w-16 h-16 rounded-full bg-accent-purple/10 text-accent-purple flex items-center justify-center">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <rect x="2" y="5" width="20" height="14" rx="2" />
-                      <line x1="2" y1="10" x2="22" y2="10" />
-                      <path d="M12 2v20" />
-                    </svg>
-                  </div>
-                  <h3 className="text-base font-bold text-text-primary">Interactive USD Deposit</h3>
-                  <p className="text-xs text-text-secondary leading-relaxed">
-                    Convert fiat USD to USDC using the local Anchor Platform.
-                    This launches a secure interactive flow to specify bank details.
-                  </p>
-                  {address && (
-                    <div className="flex flex-col gap-2 w-full bg-bg-secondary border border-border-theme rounded-xl p-4 text-left">
-                      <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Your Address</span>
-                      <span className="text-xs text-text-primary font-mono break-all leading-relaxed">
-                        {address}
-                      </span>
-                    </div>
-                  )}
-                  <div className="w-full text-left">
-                    <label className="block mb-2 text-xs font-semibold text-text-secondary">
-                      Deposit Amount (USD)
-                    </label>
-                    <input
-                      type="number"
-                      className="w-full bg-bg-secondary border border-border-theme rounded-xl py-3.5 px-4 text-sm outline-none focus:border-accent-purple/50 focus:ring-4 focus:ring-accent-purple/10 text-text-primary transition-all duration-300 focus:bg-bg-card"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder="Enter amount"
-                    />
-                  </div>
-                  <button
-                    className="w-full py-4 px-6 text-sm font-bold bg-gradient-to-r from-accent-purple to-accent-indigo text-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
-                    onClick={handleAnchorDeposit}
-                  >
-                    Start Anchor Deposit
-                  </button>
+                <div className="flex items-center gap-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-[#113C2F] shrink-0">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span>Typically 1-2 mins</span>
                 </div>
-              )}
+                <div className="flex items-center gap-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-[#113C2F] shrink-0">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  <span>Best Rates via Oracle</span>
+                </div>
+              </div>
             </div>
           )}
 
@@ -297,9 +408,9 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
                   <line x1="10" y1="14" x2="21" y2="3" />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-text-primary">Scan this QR code in the sim bank app</h3>
+              <h3 className="text-lg font-bold text-text-primary">Scan this QR code in the stellar Bank app</h3>
               <p className="text-xs text-text-secondary leading-relaxed">
-                Open the simulated bank portal on your phone, scan this QR code, and approve the deposit there.
+                Open and  scan this QR code, and approve the deposit there.
               </p>
               <div className="flex flex-col items-center gap-3 w-full">
                 <div className="bg-white p-3.5 rounded-2xl shadow-lg border border-border-theme flex items-center justify-center">
@@ -311,35 +422,24 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
                     className="block"
                   />
                 </div>
-                <div className="flex flex-col gap-2 w-full bg-bg-secondary border border-border-theme rounded-xl p-4 text-left">
-                  <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Portal Link</span>
-                  <span className="text-xs text-text-primary font-mono break-all leading-relaxed">
-                    {interactivePortalUrl || interactiveUrl}
-                  </span>
-                </div>
+
                 <div className="flex items-center gap-3 bg-bg-card border border-border-theme rounded-xl p-4 text-sm text-text-secondary mt-3">
                   <div className="progress-spinner" style={{ width: 14, height: 14 }} />
                   <span>Waiting for deposit confirmation on-chain...</span>
                 </div>
               </div>
             </div>
-          )}
-
-          {step === "success" && (
+          )}          {step === "success" && (
             <div className="flex flex-col items-center text-center p-6 gap-4">
-              <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-[#113C2F]/5 flex items-center justify-center">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2">
-                  <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                   <polyline points="22,4 12,14.01 9,11.01" />
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-text-primary">Account Funded! 🎉</h3>
-              {method === "friendbot" ? (
-                <p className="text-xs text-text-secondary">10,000 XLM has been added to your testnet account.</p>
-              ) : (
-                <p className="text-xs text-text-secondary">USDC deposit successfully completed via Anchor Platform.</p>
-              )}
-              <button className="w-full py-4 px-6 text-sm font-bold bg-gradient-to-r from-accent-purple to-accent-indigo text-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300" onClick={handleClose}>
+              <p className="text-xs text-text-secondary">USDC deposit successfully completed via Anchor Platform.</p>
+              <button className="w-full py-3.5 px-6 text-sm font-bold bg-[#113C2F] text-white rounded-2xl cursor-pointer hover:opacity-90 hover:shadow-lg transition-all duration-300 border-0 font-bold shadow-md shadow-[#113C2F]/10" onClick={handleClose}>
                 Done
               </button>
             </div>
@@ -347,7 +447,7 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
 
           {step === "error" && (
             <div className="flex flex-col items-center text-center p-6 gap-4">
-              <div className="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-red-500/5 flex items-center justify-center">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="8" x2="12" y2="12" />
@@ -357,7 +457,7 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
               <h3 className="text-lg font-bold text-text-primary">Deposit Failed</h3>
               <p className="text-xs text-text-secondary">{errorMsg}</p>
               <button
-                className="w-full py-4 px-6 text-sm font-bold bg-gradient-to-r from-accent-purple to-accent-indigo text-white rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
+                className="w-full py-3.5 px-6 text-sm font-bold bg-[#113C2F] text-white rounded-2xl cursor-pointer hover:opacity-90 hover:shadow-lg transition-all duration-300 border-0 font-bold shadow-md shadow-[#113C2F]/10"
                 onClick={() => {
                   setStep("idle");
                 }}

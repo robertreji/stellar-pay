@@ -1,40 +1,47 @@
 "use client";
 
-export default function BottomNav() {
+interface BottomNavProps {
+  activeTab: string;
+  onChangeTab: (tab: string) => void;
+  onSendClick: () => void;
+}
+
+export default function BottomNav({ activeTab, onChangeTab }: BottomNavProps) {
   return (
-    <nav className="flex md:hidden fixed bottom-0 left-0 right-0 bg-bg-glass-strong/90 backdrop-blur-lg border-t border-border-theme py-2 px-4 pb-safe justify-around items-center z-[100]">
-      <a className="flex flex-col items-center gap-1 py-2 px-3 text-text-muted hover:text-accent-purple text-[11px] font-semibold transition-colors duration-200 no-underline" href="#">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <nav className="flex md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-xl border border-[#164A3A]/8 py-2.5 px-3 rounded-[32px] shadow-[0_16px_40px_rgba(22,74,58,0.12)] justify-center items-center gap-4 z-[100] max-w-[320px] w-[90%]">
+      {/* Home */}
+      <button 
+        type="button"
+        onClick={() => onChangeTab("home")}
+        className={`flex items-center gap-2.5 py-2.5 px-5 rounded-2xl border-0 text-xs font-bold transition-all duration-300 cursor-pointer ${
+          activeTab === "home" 
+            ? "bg-[#164A3A] text-white shadow-md shadow-[#164A3A]/10 scale-[1.03]" 
+            : "bg-transparent text-[#4E6B4A] hover:bg-[#164A3A]/5"
+        }`}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
           <polyline points="9,22 9,12 15,12 15,22" />
         </svg>
         <span>Home</span>
-      </a>
-      <a className="flex flex-col items-center gap-1 py-2 px-3 text-text-muted hover:text-accent-purple text-[11px] font-semibold transition-colors duration-200 no-underline" href="#">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-          <polyline points="14,2 14,8 20,8" />
-          <line x1="16" y1="13" x2="8" y2="13" />
-          <line x1="16" y1="17" x2="8" y2="17" />
+      </button>
+
+      {/* Wallet */}
+      <button 
+        type="button"
+        onClick={() => onChangeTab("wallet")}
+        className={`flex items-center gap-2.5 py-2.5 px-5 rounded-2xl border-0 text-xs font-bold transition-all duration-300 cursor-pointer ${
+          activeTab === "wallet" 
+            ? "bg-[#164A3A] text-white shadow-md shadow-[#164A3A]/10 scale-[1.03]" 
+            : "bg-transparent text-[#4E6B4A] hover:bg-[#164A3A]/5"
+        }`}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <path d="M12 4v16M2 10h20" />
         </svg>
-        <span>Activity</span>
-      </a>
-      <a className="flex flex-col items-center gap-1 py-2 px-3 text-accent-purple hover:text-accent-purple text-[11px] font-semibold transition-colors duration-200 no-underline relative -mt-5" href="#">
-        <div className="w-13 h-13 rounded-full bg-gradient-to-r from-accent-purple to-accent-indigo flex items-center justify-center text-white shadow-[0_4px_20px_rgba(27,67,50,0.3)] hover:scale-105 hover:shadow-[0_6px_30px_rgba(27,67,50,0.45)] transition-all duration-300">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="2" y="6" width="20" height="12" rx="2" />
-            <path d="M22 10H18a2 2 0 000 4h4" />
-          </svg>
-        </div>
         <span>Wallet</span>
-      </a>
-      <a className="flex flex-col items-center gap-1 py-2 px-3 text-text-muted hover:text-accent-purple text-[11px] font-semibold transition-colors duration-200 no-underline" href="#">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-        </svg>
-        <span>Settings</span>
-      </a>
+      </button>
     </nav>
   );
 }

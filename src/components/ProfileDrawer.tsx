@@ -14,11 +14,8 @@ export default function ProfileDrawer({
   onClose,
   onImageUpdated,
 }: ProfileDrawerProps) {
-  const { connected, address, secretKey, username, disconnectWallet } = useWallet();
+  const { connected, address, username } = useWallet();
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [showSecret, setShowSecret] = useState(false);
-  const [copiedAddress, setCopiedAddress] = useState(false);
-  const [copiedSecret, setCopiedSecret] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   // Sync profile photo
@@ -71,19 +68,6 @@ export default function ProfileDrawer({
     }
   };
 
-  const handleCopyAddress = () => {
-    navigator.clipboard.writeText(address);
-    setCopiedAddress(true);
-    setTimeout(() => setCopiedAddress(false), 2000);
-  };
-
-  const handleCopySecret = () => {
-    if (!secretKey) return;
-    navigator.clipboard.writeText(secretKey);
-    setCopiedSecret(true);
-    setTimeout(() => setCopiedSecret(false), 2000);
-  };
-
   const getInitials = (nameOrAddr: string) => {
     const clean = nameOrAddr.replace("@", "");
     return clean.slice(0, 2).toUpperCase();
@@ -102,18 +86,18 @@ export default function ProfileDrawer({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto flex flex-col gap-6 pr-1">
+        <div className="flex-1 flex flex-col justify-center items-center gap-6 pr-1">
           {/* Avatar Upload Container */}
-          <div className="flex flex-col items-center gap-2.5">
+          <div className="flex flex-col items-center gap-4">
             <div
               onClick={() => document.getElementById("drawer-avatar-input")?.click()}
-              className="w-24 h-24 rounded-full flex items-center justify-center cursor-pointer relative overflow-hidden border border-border-theme shadow-md bg-gradient-to-r from-accent-purple to-accent-indigo text-white group"
+              className="w-28 h-28 rounded-full flex items-center justify-center cursor-pointer relative overflow-hidden border-2 border-[#164A3A]/10 shadow-lg bg-gradient-to-r from-accent-purple to-accent-indigo text-white group transition-all duration-300 hover:scale-105"
               title="Click to change profile photo"
             >
               {profileImage ? (
                 <img src={profileImage} alt="Profile photo" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-3xl font-bold">
+                <span className="text-4xl font-extrabold tracking-wider">
                   {getInitials(username || address)}
                 </span>
               )}
@@ -128,82 +112,11 @@ export default function ProfileDrawer({
               onChange={handleImageUpload}
               className="hidden"
             />
-            {username && <span className="text-lg font-bold text-text-primary">@{username}</span>}
-          </div>
-
-          {/* Public Address Group */}
-          <div className="flex flex-col gap-2 w-full">
-            <label className="text-xs font-semibold text-text-secondary">Public Stellar Address</label>
-            <div className="flex gap-2">
-              <div className="flex-1 bg-bg-card border border-border-theme rounded-xl p-3 font-mono text-xs text-text-secondary break-all leading-normal">
-                {address}
-              </div>
-              <button
-                onClick={handleCopyAddress}
-                className={`py-3 px-4 text-xs font-bold rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 ${
-                  copiedAddress
-                    ? "bg-success text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
-                    : "bg-gradient-to-r from-accent-purple to-accent-indigo text-white"
-                }`}
-              >
-                {copiedAddress ? "Copied" : "Copy"}
-              </button>
+            <div className="flex flex-col items-center text-center">
+              {username && <span className="text-xl font-extrabold text-[#164A3A]">@{username}</span>}
+              <span className="text-xs text-text-muted mt-2 max-w-[200px]">Tap the circle above to upload a profile photo</span>
             </div>
           </div>
-
-          {/* Secret Key reveal / backup */}
-          <div className="flex flex-col gap-2 w-full">
-            <label className="text-xs font-semibold text-text-secondary">Secret Key Backup</label>
-            <div className="flex flex-col gap-2.5">
-              <button
-                type="button"
-                onClick={() => setShowSecret(!showSecret)}
-                className={`w-full py-3 px-4 text-xs font-bold rounded-xl border border-border-theme cursor-pointer transition-all duration-200 ${
-                  showSecret
-                    ? "bg-error/10 border-error/20 text-error"
-                    : "bg-bg-card text-text-secondary hover:bg-bg-hover hover:border-border-theme-hover"
-                }`}
-              >
-                {showSecret ? "Hide Secret Key" : "Reveal Secret Key (Warning)"}
-              </button>
-
-              {showSecret && secretKey && (
-                <div className="flex flex-col gap-2.5 w-full animate-[fadeIn_0.2s_ease]">
-                  <div className="bg-error/5 border border-error/15 rounded-xl p-3 text-[11px] text-error leading-normal font-semibold">
-                    <strong>WARNING:</strong> Never share your secret key. Anyone with this key can access all your funds.
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="flex-1 bg-bg-card border border-border-theme rounded-xl p-3 font-mono text-xs text-text-secondary break-all leading-normal">
-                      {secretKey}
-                    </div>
-                    <button
-                      onClick={handleCopySecret}
-                      className={`py-3 px-4 text-xs font-bold rounded-xl cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 ${
-                        copiedSecret
-                          ? "bg-success text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
-                          : "bg-gradient-to-r from-accent-purple to-accent-indigo text-white"
-                      }`}
-                    >
-                      {copiedSecret ? "Copied" : "Copy"}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="mt-6 pt-6 border-t border-border-theme">
-          <button
-            onClick={() => {
-              disconnectWallet();
-              onClose();
-            }}
-            className="w-full py-4 px-6 text-sm font-bold bg-error/10 border border-error/20 text-error rounded-xl cursor-pointer hover:bg-error hover:text-white hover:shadow-[0_4px_16px_rgba(239,68,68,0.3)] transition-all duration-300"
-          >
-            Disconnect Wallet
-          </button>
         </div>
       </div>
     </div>

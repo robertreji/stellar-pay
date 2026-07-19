@@ -2,32 +2,32 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-primary: #faf9f5;
-  --color-bg-secondary: #f4f2ea;
-  --color-sidebar-bg: #f4f2ea;
-  --color-bg-main: #faf9f5;
-  --color-bg-card: #ffffff;
-  --color-bg-card-hover: #fcfbf9;
-  --color-bg-button: #ffffff;
-  --color-bg-hover: rgba(27, 67, 50, 0.05);
+  --color-bg-primary: #F8F6F1;
+  --color-bg-secondary: #F0EDE4;
+  --color-sidebar-bg: #F0EDE4;
+  --color-bg-main: #F8F6F1;
+  --color-bg-card: #FFFFFF;
+  --color-bg-card-hover: #FAF8F4;
+  --color-bg-button: #FFFFFF;
+  --color-bg-hover: rgba(22, 74, 58, 0.05);
   --color-bg-glass: rgba(255, 255, 255, 0.85);
-  --color-bg-glass-strong: rgba(244, 242, 234, 0.95);
+  --color-bg-glass-strong: rgba(248, 246, 241, 0.95);
 
-  --color-accent-purple: #1b4332;
-  --color-accent-violet: #1b4332;
-  --color-accent-glow: #1b4332;
-  --color-accent-indigo: #c29d58;
+  --color-accent-purple: #164A3A;
+  --color-accent-violet: #164A3A;
+  --color-accent-glow: #164A3A;
+  --color-accent-indigo: #C9A34E;
   
-  --color-text-primary: #132e22;
-  --color-text-secondary: #4a534e;
-  --color-text-muted: #8a9590;
+  --color-text-primary: #164A3A;
+  --color-text-secondary: #4E6B4A;
+  --color-text-muted: #8A9886;
   
-  --color-success: #1b4332;
-  --color-error: #ef4444;
-  --color-warning: #c29d58;
+  --color-success: #164A3A;
+  --color-error: #D9534F;
+  --color-warning: #C9A34E;
 
-  --color-border-theme: rgba(27, 67, 50, 0.08);
-  --color-border-theme-hover: rgba(27, 67, 50, 0.15);
+  --color-border-theme: rgba(22, 74, 58, 0.08);
+  --color-border-theme-hover: rgba(22, 74, 58, 0.15);
 }
 
 /* Base resets & utilities */
@@ -43,7 +43,7 @@ body {
 .progress-spinner {
   width: 24px;
   height: 24px;
-  border: 2px solid rgba(27, 67, 50, 0.1);
+  border: 2px solid rgba(22, 74, 58, 0.1);
   border-top-color: var(--color-accent-purple);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -58,9 +58,9 @@ body {
 .shimmer {
   background: linear-gradient(
     90deg,
-    rgba(27, 67, 50, 0.02) 25%,
-    rgba(27, 67, 50, 0.06) 50%,
-    rgba(27, 67, 50, 0.02) 75%
+    rgba(22, 74, 58, 0.02) 25%,
+    rgba(22, 74, 58, 0.06) 50%,
+    rgba(22, 74, 58, 0.02) 75%
   );
   background-size: 200% 100%;
   animation: shimmerAnim 1.5s infinite linear;
@@ -88,4 +88,12 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

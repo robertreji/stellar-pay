@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useWallet } from "@/context/WalletContext";
 import { getPaymentHistory, PaymentRecord } from "@/lib/stellar";
 import { getContacts, Contact } from "@/lib/contacts";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 
 export default function TransactionList() {
   const { address, connected } = useWallet();
@@ -11,6 +13,7 @@ export default function TransactionList() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const fetchTransactions = useCallback(async () => {
     if (!address) return;
@@ -31,6 +34,17 @@ export default function TransactionList() {
       setContacts(getContacts());
     }
   }, [connected, address, fetchTransactions]);
+
+  // GSAP animation for staggering entry of list items
+  useGSAP(() => {
+    if (transactions.length > 0 && listRef.current) {
+      gsap.fromTo(
+        listRef.current.children,
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, duration: 0.45, stagger: 0.06, ease: "power2.out" }
+      );
+    }
+  }, [transactions, showAll]);
 
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -107,7 +121,7 @@ export default function TransactionList() {
           ))}
         </div>
       ) : transactions.length === 0 ? (
-        <div className="bg-bg-card border border-border-theme rounded-2xl p-8 flex flex-col items-center justify-center text-center text-text-muted gap-2 min-h-[160px]">
+        <div className="bg-bg-card border border-border-theme rounded-[24px] p-8 flex flex-col items-center justify-center text-center text-text-muted gap-2 min-h-[160px] shadow-sm">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
@@ -119,7 +133,7 @@ export default function TransactionList() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div ref={listRef} className="flex flex-col gap-2.5">
           {displayTxs.map((tx) => {
             const counterparty = tx.isIncoming ? tx.from : tx.to;
             const contact = contacts.find((c) => c.address === counterparty);
@@ -132,15 +146,15 @@ export default function TransactionList() {
             return (
               <a
                 key={tx.id}
-                className="flex items-center gap-3.5 bg-bg-card border border-border-theme rounded-2xl p-4 transition-all duration-300 text-text-primary hover:bg-bg-card-hover hover:border-border-theme-hover no-underline cursor-pointer"
+                className="flex items-center gap-3.5 bg-white border border-[#164A3A]/6 rounded-2xl p-4 transition-all duration-300 text-[#164A3A] hover:border-[#164A3A]/15 hover:shadow-[0_4px_16px_rgba(22,74,58,0.03)] no-underline cursor-pointer"
                 href={`https://stellar.expert/explorer/testnet/tx/${tx.transactionHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-[#164A3A] bg-[#164A3A]/5 border border-[#164A3A]/10 flex-shrink-0 shadow-sm"
                   style={{
-                    background: contact?.image ? "none" : `linear-gradient(135deg, ${contact ? contact.color : getAvatarColor(counterparty)}, ${contact ? contact.color : getAvatarColor(counterparty)}88)`,
+                    background: contact?.image ? "none" : undefined,
                     overflow: "hidden",
                   }}
                 >
@@ -155,13 +169,13 @@ export default function TransactionList() {
                   )}
                 </div>
                 <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-                  <span className="text-sm font-semibold truncate">{displayName}</span>
-                  <span className="text-xs text-text-muted">
+                  <span className="text-[13px] font-bold text-[#164A3A] truncate">{displayName}</span>
+                  <span className="text-[10.5px] text-[#4E6B4A] font-medium">
                     {tx.isIncoming ? "Received" : "Sent"} · {formatTime(tx.createdAt)}
                   </span>
                 </div>
                 <span
-                  className={`text-sm font-bold flex-shrink-0 font-mono ${tx.isIncoming ? "text-success" : "text-text-primary"}`}
+                  className={`text-xs font-black flex-shrink-0 font-mono ${tx.isIncoming ? "text-[#164A3A]" : "text-text-primary"}`}
                 >
                   {tx.isIncoming ? "+" : "-"}
                   {parseFloat(tx.amount).toLocaleString("en-US", {

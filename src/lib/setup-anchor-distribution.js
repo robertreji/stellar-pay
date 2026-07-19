@@ -22,24 +22,41 @@ async function main() {
   const distAddress = distKeypair.publicKey();
   console.log(`Distribution Account Public Address: ${distAddress}`);
 
-  // 2. Get USDC issuer public key from database
-  let db;
-  let usdcIssuerPublic;
-  let usdcIssuerSecret;
+  // 2. Get USDC issuer public key from config.json or database
+  let usdcIssuerPublic = null;
+  let usdcIssuerSecret = null;
   try {
-    db = new Database(DB_PATH);
-    const row = db.prepare("SELECT value FROM config WHERE key = ?").get("usdc_issuer_public");
-    usdcIssuerPublic = row ? row.value : null;
-
-    const rowSecret = db.prepare("SELECT value FROM config WHERE key = ?").get("usdc_issuer_secret");
-    usdcIssuerSecret = rowSecret ? rowSecret.value : null;
+    const fs = require("fs");
+    const configPath = path.join(__dirname, "..", "..", "config.json");
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+      usdcIssuerPublic = config.usdc_issuer_public || null;
+      usdcIssuerSecret = config.usdc_issuer_secret || null;
+      if (usdcIssuerPublic) {
+        console.log("Loaded USDC issuer configuration from config.json.");
+      }
+    }
   } catch (e) {
-    console.error("Error: Failed to read from SQLite database:", e);
-    process.exit(1);
+    console.warn("Warning: Failed to read from config.json:", e.message);
   }
 
   if (!usdcIssuerPublic || !usdcIssuerSecret) {
-    console.error("Error: USDC issuer not found in database. Run the wallet app first to initialize the database.");
+    let db;
+    try {
+      db = new Database(DB_PATH);
+      const row = db.prepare("SELECT value FROM config WHERE key = ?").get("usdc_issuer_public");
+      usdcIssuerPublic = row ? row.value : null;
+
+      const rowSecret = db.prepare("SELECT value FROM config WHERE key = ?").get("usdc_issuer_secret");
+      usdcIssuerSecret = rowSecret ? rowSecret.value : null;
+    } catch (e) {
+      console.error("Error: Failed to read from SQLite database:", e);
+      process.exit(1);
+    }
+  }
+
+  if (!usdcIssuerPublic || !usdcIssuerSecret) {
+    console.error("Error: USDC issuer not found in config.json or database. Run the wallet app first to initialize the database.");
     process.exit(1);
   }
 

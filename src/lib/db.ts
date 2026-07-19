@@ -1,15 +1,39 @@
-import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
 
 const DB_PATH = path.join(process.cwd(), "stellarpay.db");
+const CONFIG_FILE_PATH = path.join(process.cwd(), "config.json");
 
-let db: Database.Database | null = null;
+function readConfigJson(): Record<string, string> {
+  try {
+    if (fs.existsSync(CONFIG_FILE_PATH)) {
+      const content = fs.readFileSync(CONFIG_FILE_PATH, "utf8");
+      return JSON.parse(content);
+    }
+  } catch (err) {
+    console.error("Error reading config.json:", err);
+  }
+  return {};
+}
 
-function getDb(): Database.Database {
-  if (!db) {
-    db = new Database(DB_PATH);
-    db.pragma("journal_mode = WAL");
-    db.exec(`
+function writeConfigJson(config: Record<string, string>) {
+  try {
+    fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config, null, 2), "utf8");
+  } catch (err) {
+    console.error("Error writing config.json:", err);
+  }
+}
+
+const globalForDb = globalThis as unknown as {
+  db: any;
+};
+
+function getDb(): any {
+  if (!globalForDb.db) {
+    const Database = require("better-sqlite3");
+    const database = new Database(DB_PATH);
+    database.pragma("journal_mode = WAL");
+    database.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL COLLATE NOCASE,
@@ -49,27 +73,24 @@ function getDb(): Database.Database {
       CREATE INDEX IF NOT EXISTS idx_pending_withdrawals_id ON pending_withdrawals(transaction_id);
     `);
     try {
-      db.exec("ALTER TABLE users ADD COLUMN profile_image TEXT;");
+      database.exec("ALTER TABLE users ADD COLUMN profile_image TEXT;");
     } catch {
       // Column already exists
     }
+    globalForDb.db = database;
   }
-  return db;
+  return globalForDb.db;
 }
 
 export function getConfig(key: string): string | null {
-  const database = getDb();
-  const row = database
-    .prepare("SELECT value FROM config WHERE key = ?")
-    .get(key) as { value: string } | undefined;
-  return row ? row.value : null;
+  const config = readConfigJson();
+  return config[key] || null;
 }
 
 export function setConfig(key: string, value: string): void {
-  const database = getDb();
-  database
-    .prepare("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)")
-    .run(key, value);
+  const config = readConfigJson();
+  config[key] = value;
+  writeConfigJson(config);
 }
 
 

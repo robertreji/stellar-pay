@@ -6,17 +6,23 @@ export async function buildPaymentTx(
   destinationAddress: string,
   amount: string,
   assetType: "XLM" | "USDC" = "XLM",
-  usdcIssuer?: string
+  usdcIssuer?: string,
+  memo?: string
 ): Promise<string> {
   const account = await horizon.loadAccount(sourceAddress);
   const asset =
     assetType === "USDC" ? getUsdcAsset(usdcIssuer) : StellarSdk.Asset.native();
 
-
-  const transaction = new StellarSdk.TransactionBuilder(account, {
+  const builder = new StellarSdk.TransactionBuilder(account, {
     fee: StellarSdk.BASE_FEE,
     networkPassphrase: config.networkPassphrase,
-  })
+  });
+
+  if (memo) {
+    builder.addMemo(StellarSdk.Memo.text(memo));
+  }
+
+  const transaction = builder
     .addOperation(
       StellarSdk.Operation.payment({
         destination: destinationAddress,

@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useWallet } from "@/context/WalletContext";
 import { useState, useEffect } from "react";
 
-export default function Sidebar({ onOpenProfile }: { onOpenProfile?: () => void }) {
+interface SidebarProps {
+  onOpenProfile?: () => void;
+  activeTab?: string;
+  onChangeTab?: (tab: string) => void;
+}
+
+export default function Sidebar({ onOpenProfile, activeTab = "home", onChangeTab }: SidebarProps) {
   const { connected, address, username, disconnectWallet } = useWallet();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -56,7 +62,14 @@ export default function Sidebar({ onOpenProfile }: { onOpenProfile?: () => void 
       </div>
 
       <nav className="flex flex-col gap-1.5 flex-1">
-        <Link className="flex items-center gap-3 py-3 px-4 rounded-xl text-accent-purple font-bold bg-bg-card border border-border-theme border-l-3 border-l-accent-purple rounded-l-none text-sm transition-all duration-300" href="/">
+        <button
+          onClick={() => onChangeTab?.("home")}
+          className={`flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-bold border transition-all duration-300 cursor-pointer w-full text-left bg-transparent border-transparent ${
+            activeTab === "home" 
+              ? "text-[#164A3A] bg-[#164A3A]/5 border-l-4 border-l-[#164A3A]" 
+              : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+          }`}
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="3" width="7" height="9" />
             <rect x="14" y="3" width="7" height="5" />
@@ -64,7 +77,24 @@ export default function Sidebar({ onOpenProfile }: { onOpenProfile?: () => void 
             <rect x="3" y="16" width="7" height="5" />
           </svg>
           Dashboard
-        </Link>
+        </button>
+
+
+
+        <button
+          onClick={() => onChangeTab?.("wallet")}
+          className={`flex items-center gap-3 py-3 px-4 rounded-xl text-sm font-bold border transition-all duration-300 cursor-pointer w-full text-left bg-transparent border-transparent ${
+            activeTab === "wallet" 
+              ? "text-[#164A3A] bg-[#164A3A]/5 border-l-4 border-l-[#164A3A]" 
+              : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+          }`}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="M12 4v16M2 10h20" />
+          </svg>
+          Wallet
+        </button>
       </nav>
 
       {connected && address && (

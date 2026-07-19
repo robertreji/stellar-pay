@@ -55,14 +55,14 @@ export default function ActionButtons({
         className="bg-bg-card border border-border-theme rounded-2xl p-5 flex flex-col items-center justify-center gap-3 text-text-primary cursor-pointer transition-all duration-300 font-semibold text-sm w-full hover:bg-bg-hover hover:border-border-theme-hover disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={onDeposit}
         disabled={!connected}
-        title="Deposit Funds"
+        title="Top-Up Wallet"
       >
         <span className="w-11 h-11 rounded-full bg-accent-purple/10 text-accent-purple flex items-center justify-center">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M12 5v14M19 12l-7 7-7-7" />
           </svg>
         </span>
-        <span className="text-[11px] sm:text-xs md:text-sm">Deposit</span>
+        <span className="text-[11px] sm:text-xs md:text-sm">Top-Up</span>
       </button>
 
       <button
