@@ -25,7 +25,7 @@ export const horizon = new StellarSdk.Horizon.Server(config.horizonUrl);
 
 export const USDC_ISSUER =
   process.env.NEXT_PUBLIC_USDC_ISSUER ||
-  "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
+  "GAJ553PWUPQDOJBP33JKEHXJXCGT5QTU7U245Y243MMQUA4QBQIJ55ND";
 
 export function getUsdcAsset(issuerAddress?: string): StellarSdk.Asset {
   return new StellarSdk.Asset("USDC", issuerAddress || USDC_ISSUER);
