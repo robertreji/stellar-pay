@@ -619,16 +619,6 @@ export default function Onboarding() {
             </div>
           </div>
 
-        </div>
-
-        <div className="flex-1 w-full max-w-[500px] flex justify-center relative">
-          <img
-            src="/hero_family.png"
-            alt="Happy Indian family looking at a smartphone"
-            className="w-full h-auto rounded-3xl shadow-lg border-4 border-white object-cover"
-          />
-        </div>
-
           <div className="flex flex-col items-start gap-3 w-full sm:w-auto">
             <button
               className="py-4 px-8 text-sm font-bold rounded-full cursor-pointer flex items-center justify-center gap-2 border bg-[#1b4332] text-white border-transparent hover:bg-[#132e22] hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 w-full sm:w-auto"
@@ -641,6 +631,15 @@ export default function Onboarding() {
               </svg>
             </button>
           </div>
+        </div>
+
+        <div className="flex-1 w-full max-w-[500px] flex justify-center relative">
+          <img
+            src="/hero_family.png"
+            alt="Happy Indian family looking at a smartphone"
+            className="w-full h-auto rounded-3xl shadow-lg border-4 border-white object-cover"
+          />
+        </div>
       </section>
 
       {/* Features Section */}
@@ -700,12 +699,17 @@ export default function Onboarding() {
 
       {/* Bridging Miles Section */}
       <section className="max-w-[1200px] mx-auto px-6 py-12 md:py-20 flex flex-col md:flex-row-reverse gap-8 md:gap-16 items-center" id="bridge">
-        <div className="flex-[1.2]">
+        <div className="flex-[1.2] flex flex-col items-start">
           <h2 className="text-3xl font-extrabold text-[#132e22] mb-3">Bridging miles.<br />Connecting hearts.</h2>
           <p className="text-base leading-relaxed text-[#4a534e] mb-7">
             From the Gulf to your home in Kerala, we make every transfer feel like you're right there. Our seamless connection to the Stellar blockchain keeps your hard-earned money moving directly to your loved ones without middlemen or delay. 💚
           </p>
-
+          <button
+            className="py-3.5 px-7 text-sm font-bold rounded-full cursor-pointer flex items-center justify-center gap-2 border bg-[#1b4332] text-white border-transparent hover:bg-[#132e22] hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
+            onClick={() => setMode("choice")}
+          >
+            Get Started Now
+          </button>
         </div>
         <div className="flex-1 w-full max-w-[440px]">
           <img
@@ -714,12 +718,6 @@ export default function Onboarding() {
             className="w-full h-auto rounded-2xl shadow-sm border border-[#1b4332]/8 bg-white p-2.5"
           />
         </div>
-                  <button
-            className="py-3.5 px-7 text-sm font-bold rounded-full cursor-pointer flex items-center justify-center gap-2 border bg-[#1b4332] text-white border-transparent hover:bg-[#132e22] hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
-            onClick={() => setMode("choice")}
-          >
-            Get Started Now
-          </button>
       </section>
 
       {/* Footer partner and trust strip */}
