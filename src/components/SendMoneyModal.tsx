@@ -348,6 +348,20 @@ export default function SendMoneyModal({
       setStep("submitting");
       const submitResult = await submitClassicTransaction(signedXdr);
 
+      // 6. Confirm transaction immediately to execute real-time bank payout
+      try {
+        await fetch("/api/remittance/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reference_id: referenceId,
+            stellar_tx_hash: submitResult.hash,
+          }),
+        });
+      } catch (confirmErr) {
+        console.warn("Real-time confirmation request failed. The background indexer cron will process it.", confirmErr);
+      }
+
       setTxHash(submitResult.hash);
       setStep("success");
       await refreshBalances();
