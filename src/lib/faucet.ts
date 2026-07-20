@@ -1,32 +1,15 @@
 import * as StellarSdk from "@stellar/stellar-sdk";
-import { getConfig, setConfig } from "./db";
 import { horizon, config } from "./stellar";
 
-// We'll fallback to a stable testnet key if DB is read-only, but try to persist in SQLite
-export async function getUsdcIssuerKeypair(): Promise<StellarSdk.Keypair> {
-  let secret = getConfig("usdc_issuer_secret");
+// USDC issuer secret key — must be set in environment variables for deployment.
+// This account must already exist and be funded on the target network.
+export function getUsdcIssuerKeypair(): StellarSdk.Keypair {
+  const secret = process.env.USDC_ISSUER_SECRET;
   if (!secret) {
-    const keypair = StellarSdk.Keypair.random();
-    secret = keypair.secret();
-    try {
-      setConfig("usdc_issuer_secret", secret);
-      setConfig("usdc_issuer_public", keypair.publicKey());
-    } catch (e) {
-      console.warn("Failed to save issuer to DB, using memory/ephemeral key:", e);
-    }
-
-    // Fund the issuer key so it exists on-chain
-    try {
-      await fetch(
-        `https://friendbot.stellar.org?addr=${encodeURIComponent(
-          keypair.publicKey()
-        )}`
-      );
-      // Wait a moment for ledger confirmation
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-    } catch (err) {
-      console.error("Failed to fund USDC issuer:", err);
-    }
+    throw new Error(
+      "USDC_ISSUER_SECRET environment variable is not configured. " +
+      "Set it to the secret key of your USDC issuer account."
+    );
   }
   return StellarSdk.Keypair.fromSecret(secret);
 }

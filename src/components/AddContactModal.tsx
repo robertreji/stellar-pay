@@ -171,7 +171,7 @@ export default function AddContactModal({
                   const initials = user.username.slice(0, 2).toUpperCase();
                   return (
                     <div
-                      key={user.id}
+                      key={user.username}
                       onClick={() => handleSelectUser(user)}
                       className="flex items-center gap-3 p-2 rounded-lg cursor-pointer bg-transparent hover:bg-bg-hover transition-colors duration-150"
                     >

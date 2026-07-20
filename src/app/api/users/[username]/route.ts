@@ -9,6 +9,10 @@ export async function GET(
     const { username } = await params;
     const normalizedUsername = username.toLowerCase();
 
+    if (normalizedUsername === "_sys_last_synced_ledger_") {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     // Check usernames_cache
     const { data: cacheData } = await supabase
       .from("usernames_cache")

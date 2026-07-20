@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { USDC_ISSUER } from "@/lib/stellar";
-import { getConfig } from "@/lib/db";
 import os from "os";
 
 import * as StellarSdk from "@stellar/stellar-sdk";
@@ -26,10 +25,11 @@ const anchorAddress = anchorKeypair.publicKey();
 
 export async function GET(_request: NextRequest) {
   try {
-    const dbIssuer = getConfig("usdc_issuer_public");
+    // Read USDC issuer from env var, falling back to the value in stellar.ts
+    const usdcIssuerPublic = process.env.USDC_ISSUER_PUBLIC || USDC_ISSUER;
     return NextResponse.json({
-      network: "testnet",
-      usdcIssuer: dbIssuer || USDC_ISSUER,
+      network: process.env.NEXT_PUBLIC_STELLAR_NETWORK || "testnet",
+      usdcIssuer: usdcIssuerPublic,
       anchorAddress: anchorAddress,
       localIp: getLocalIpAddress(),
     });
@@ -41,5 +41,3 @@ export async function GET(_request: NextRequest) {
     );
   }
 }
-
-

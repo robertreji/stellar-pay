@@ -19,7 +19,6 @@ function getLocalIpAddress(): string {
 const localIp = getLocalIpAddress();
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3"],
   allowedDevOrigins: [
     localIp,
     `${localIp}:3002`,
