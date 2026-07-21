@@ -643,7 +643,7 @@ export default function Onboarding() {
       </section>
 
       {/* Features Section */}
-      <section className="max-w-[1200px] mx-auto px-6 py-12 md:py-20" id="why-us">
+      <section className="max-w-[1201px] mx-auto px-6 py-12 md:py-20" id="why-us">
         <div className="text-center mb-10 max-w-[600px] mx-auto">
           <h2 className="text-3xl font-extrabold text-[#132e22] mb-3">Why enteveed?</h2>
           <p className="text-sm text-[#4a534e] leading-relaxed">We build financial bridges that keep you close to your family, offering the best rates and instant deliveries.</p>
