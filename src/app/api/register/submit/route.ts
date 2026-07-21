@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
       // Build draft inner transaction using sponsor sequence number
       const innerTx = new StellarSdk.TransactionBuilder(sponsorAccount, {
-        fee: StellarSdk.BASE_FEE,
+        fee: "100000",
         networkPassphrase,
       })
         .addOperation(op)
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       // Wrap in a fee-bump transaction
       const feeBumpTx = StellarSdk.TransactionBuilder.buildFeeBumpTransaction(
         sponsorAddress,
-        StellarSdk.BASE_FEE,
+        "100000",
         assembledTx,
         networkPassphrase
       );
