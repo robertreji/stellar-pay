@@ -61,7 +61,7 @@ export default function BalanceCard() {
   });
 
   return (
-    <div className="bg-gradient-to-br from-[#164A3A] via-[#1E5645] to-[#113C2F] text-white rounded-[28px] p-7 shadow-lg relative overflow-hidden mb-6 flex flex-col justify-between min-h-[190px] border border-white/5 flex-shrink-0">
+    <div className="bg-gradient-to-br from-[#164A3A] via-[#1E5645] to-[#113C2F] text-white rounded-[28px] p-7 shadow-lg relative overflow-hidden mb-6 flex flex-col justify-between min-h-[190px] border border-white/5 shrink-0">
       
       {/* Background Gulf-Kerala-India Mixed Image */}
       <div className="absolute inset-y-0 right-0 w-[50%] sm:w-[55%] select-none pointer-events-none z-0">
