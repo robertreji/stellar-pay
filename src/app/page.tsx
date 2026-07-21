@@ -179,7 +179,9 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 py-0.5 px-2 bg-warning/10 border border-warning/15 rounded-full text-[9px] font-bold text-warning">
                 <div className="w-1 h-1 rounded-full bg-warning animate-pulse" />
-                <span>Testnet</span>
+                <span>
+                  {process.env.NEXT_PUBLIC_STELLAR_NETWORK === "mainnet" ? "Mainnet" : "Testnet"}
+                </span>
               </div>
             </div>
 
@@ -242,7 +244,7 @@ export default function Home() {
             <BalanceCard />
 
             {/* CONTACTS Section */}
-            <div className="bg-white border border-[#164A3A]/8 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 flex flex-col gap-3.5 sm:gap-4 shadow-[0_8px_30px_rgba(22,74,58,0.02)] w-full">
+            <div className="bg-white border border-[#164A3A]/8 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 flex flex-col gap-3.5 sm:gap-4 shadow-[0_8px_30px_rgba(22,74,58,0.02)] w-full flex-shrink-0">
               <div className="flex justify-between items-center px-1">
                 <span className="text-xs font-bold text-[#164A3A] uppercase tracking-wider">
                   Contacts
@@ -343,7 +345,7 @@ export default function Home() {
             </div>
 
             {/* Primary CTA: Send Money Home Card */}
-            <div className="bg-white border border-[#164A3A]/8 rounded-[28px] overflow-hidden shadow-[0_8px_30px_rgba(22,74,58,0.02)] group hover:shadow-md transition-all duration-300 flex flex-col relative">
+            <div className="bg-white border border-[#164A3A]/8 rounded-[28px] overflow-hidden shadow-[0_8px_30px_rgba(22,74,58,0.02)] group hover:shadow-md transition-all duration-300 flex flex-col relative flex-shrink-0">
               <div className="p-6 md:p-8 flex justify-between relative min-h-[230px]">
                 {/* Left Content */}
                 <div className="relative z-10 flex flex-col gap-3.5 max-w-[62%] sm:max-w-[60%]">
@@ -472,7 +474,7 @@ export default function Home() {
             </div>
 
             {/* Live Remittances List */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 flex-shrink-0">
               <span className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Live UPI Remittances
               </span>
@@ -481,7 +483,7 @@ export default function Home() {
 
             {/* Announcement Banner */}
             {!announcementDismissed && (
-              <div className="bg-bg-card border border-border-theme rounded-2xl p-4 flex justify-between items-center shadow-md animate-[fadeIn_0.3s_ease]">
+              <div className="bg-bg-card border border-border-theme rounded-2xl p-4 flex justify-between items-center shadow-md animate-[fadeIn_0.3s_ease] flex-shrink-0">
                 <div className="flex items-center gap-3 text-sm text-text-secondary">
                   <div className="w-8 h-8 rounded-lg bg-accent-purple/10 text-accent-purple flex items-center justify-center flex-shrink-0">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -511,7 +513,7 @@ export default function Home() {
 
         {/* Activity view */}
         {activeTab === "activity" && (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 flex-shrink-0">
             <div className="flex flex-col gap-3">
               <span className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Live UPI Remittances
@@ -535,7 +537,8 @@ export default function Home() {
           <>
             <BalanceCard />
 
-            <div className="flex flex-col gap-3 mt-2">
+            {/* Action Buttons wrapper */}
+            <div className="flex flex-col gap-3 mt-2 flex-shrink-0">
               <span className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Stellar Wallet Operations
               </span>
@@ -549,7 +552,7 @@ export default function Home() {
 
             <div className="h-px bg-border-theme my-2" />
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 flex-shrink-0">
               <span className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Wallet-to-Wallet History
               </span>
@@ -560,7 +563,7 @@ export default function Home() {
 
         {/* Settings view */}
         {activeTab === "settings" && (
-          <div className="flex flex-col gap-6 bg-white border border-border-theme rounded-3xl p-6 shadow-sm">
+          <div className="flex flex-col gap-6 bg-white border border-border-theme rounded-3xl p-6 shadow-sm flex-shrink-0">
             <div className="flex items-center gap-4 pb-4 border-b border-border-theme">
               <div className="w-16 h-16 rounded-full bg-[#113C2F]/10 text-[#113C2F] flex items-center justify-center text-xl font-bold">
                 {profileImage ? (
