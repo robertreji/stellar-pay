@@ -18,6 +18,7 @@ export async function GET(_request: NextRequest) {
       network: process.env.NEXT_PUBLIC_STELLAR_NETWORK || "testnet",
       usdcIssuer: usdcIssuerPublic,
       anchorAddress: anchorAddress,
+      bankUrl: process.env.BANK_URL || "https://bank-sim-six.vercel.app",
     });
   } catch (error) {
     console.error("Config GET error:", error);

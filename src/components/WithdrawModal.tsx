@@ -45,6 +45,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
   const [withdrawDetails, setWithdrawDetails] =
     useState<AnchorTransaction | null>(null);
   const [paymentHash, setPaymentHash] = useState("");
+  const [bankUrl, setBankUrl] = useState("https://bank-sim-six.vercel.app");
 
   // Payout method state
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>("upi");
@@ -68,6 +69,23 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
       stopPolling();
     };
   }, [isOpen, address, secretKey]);
+
+  useEffect(() => {
+    async function loadConfig() {
+      try {
+        const res = await fetch("/api/config");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.bankUrl) {
+            setBankUrl(data.bankUrl);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load config details:", err);
+      }
+    }
+    loadConfig();
+  }, []);
 
   const isFormValid = () => {
     const amt = parseFloat(amount);
@@ -100,13 +118,34 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
       const token = await authenticateWithAnchor(address, secretKey);
       tokenRef.current = token;
 
+      // 1. Get interactive transaction session from anchor
       const res = await initiateWithdraw(address, secretKey, "USDC", amount);
       setInteractiveUrl(res.url);
       setTransactionId(res.id);
       setStep("interactive");
 
-      window.open(res.url, "_blank");
+      // 2. Automate bank interactive flow authorization in the background
+      const targetBankAccountId = payoutMethod === "upi"
+        ? (upiId.trim().includes("@") ? upiId.trim().split("@")[0].toLowerCase() : upiId.trim().toLowerCase())
+        : bankDetails.accountNumber.trim();
 
+      const bankSettleRes = await fetch(`${bankUrl}/api/bank/settle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transactionId: res.id,
+          accountId: targetBankAccountId,
+          amount: amount,
+          kind: "withdrawal",
+        }),
+      });
+
+      if (!bankSettleRes.ok) {
+        const errData = await bankSettleRes.json();
+        throw new Error(errData.error || "Failed to authorize withdrawal with bank.");
+      }
+
+      // 3. Start polling for anchor transaction status (which will hit pending_user_transfer_start instantly!)
       startPolling(token, res.id);
     } catch (err: any) {
       console.error(err);
@@ -869,44 +908,16 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
             </div>
           )}
 
-          {step === "interactive" && interactiveUrl && (
-            <div className="flex flex-col items-center text-center py-8 gap-4">
-              <div className="w-16 h-16 rounded-full bg-[#113C2F]/10 text-[#113C2F] flex items-center justify-center">
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-                  <polyline points="15,3 21,3 21,9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg>
-              </div>
+          {step === "interactive" && (
+            <div className="flex flex-col items-center text-center py-8 gap-4 animate-[fadeIn_0.2s_ease]">
+              <div className="progress-spinner large-spinner" />
               <h3 className="text-lg font-bold text-text-primary">
-                Portal Opened in New Tab
+                Authorizing Bank Settlement...
               </h3>
               <p className="text-xs text-text-secondary leading-relaxed">
-                We've opened the Anchor portal in a new browser tab. Please
-                complete their verification to continue your withdrawal.
+                Connecting to <strong>StellarBank</strong> and authorizing
+                fiat payout to <strong>{getPayoutSummary()}</strong>...
               </p>
-              <div className="flex flex-col gap-3 w-full">
-                <button
-                  onClick={() => window.open(interactiveUrl, "_blank")}
-                  className="w-full py-4 px-6 text-sm font-bold bg-[#113C2F] text-white rounded-2xl cursor-pointer hover:opacity-90 hover:shadow-lg transition-all duration-300 border-0 shadow-md shadow-[#113C2F]/10"
-                >
-                  Re-open Portal Tab
-                </button>
-                <div className="flex items-center gap-3 bg-bg-card border border-border-theme rounded-xl p-4 text-sm text-text-secondary mt-3">
-                  <div
-                    className="progress-spinner"
-                    style={{ width: 14, height: 14 }}
-                  />
-                  <span>Waiting for your input in the other tab...</span>
-                </div>
-              </div>
             </div>
           )}
 
