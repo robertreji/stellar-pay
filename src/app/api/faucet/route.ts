@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fundWithFriendbot } from "@/lib/transactions";
+import { fundWithFriendbot, sponsorCreateAccount } from "@/lib/transactions";
 import { sendStartingUsdc } from "@/lib/faucet";
 
 export async function POST(request: NextRequest) {
@@ -15,8 +15,18 @@ export async function POST(request: NextRequest) {
     }
 
     if (asset === "XLM") {
-      await fundWithFriendbot(address);
-      return NextResponse.json({ success: true, message: "Funded with XLM" });
+      const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK || "testnet";
+      if (network === "mainnet") {
+        const res = await sponsorCreateAccount(address, "2.0");
+        return NextResponse.json({
+          success: true,
+          message: "Funded with XLM via sponsor",
+          hash: res.hash,
+        });
+      } else {
+        await fundWithFriendbot(address);
+        return NextResponse.json({ success: true, message: "Funded with XLM via Friendbot" });
+      }
     }
 
     if (asset === "USDC") {

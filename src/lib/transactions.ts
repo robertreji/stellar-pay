@@ -124,4 +124,38 @@ export async function buildSwapTx(
   return transaction.toXDR();
 }
 
+export async function sponsorCreateAccount(
+  destinationAddress: string,
+  startingBalance: string = "2.0"
+): Promise<{ success: boolean; hash: string }> {
+  const sponsorSecret = process.env.SPONSOR_SECRET_KEY;
+  if (!sponsorSecret) {
+    throw new Error("SPONSOR_SECRET_KEY environment variable is not configured.");
+  }
+  const sponsorKeypair = StellarSdk.Keypair.fromSecret(sponsorSecret);
+  const sponsorAddress = sponsorKeypair.publicKey();
+
+  const sponsorAccount = await horizon.loadAccount(sponsorAddress);
+
+  const transaction = new StellarSdk.TransactionBuilder(sponsorAccount, {
+    fee: StellarSdk.BASE_FEE,
+    networkPassphrase: config.networkPassphrase,
+  })
+    .addOperation(
+      StellarSdk.Operation.createAccount({
+        destination: destinationAddress,
+        startingBalance: startingBalance,
+      })
+    )
+    .setTimeout(180)
+    .build();
+
+  transaction.sign(sponsorKeypair);
+  const response = await horizon.submitTransaction(transaction);
+  return {
+    success: true,
+    hash: response.hash,
+  };
+}
+
 
