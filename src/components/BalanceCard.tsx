@@ -145,7 +145,7 @@ export default function BalanceCard() {
       <div className="flex items-center gap-2 relative z-10 mt-1">
         <div className="flex items-center gap-1.5 py-1 px-3 rounded-full bg-white/10 border border-white/10 text-[10px] font-bold tracking-wider uppercase text-white/90">
           <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-pulse" />
-          <span>Testnet</span>
+          <span>{process.env.NEXT_PUBLIC_STELLAR_NETWORK === "mainnet" ? "Mainnet" : "Testnet"}</span>
         </div>
       </div>
     </div>

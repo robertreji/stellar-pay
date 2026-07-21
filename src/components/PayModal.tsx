@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@/context/WalletContext";
 import { buildPaymentTx, submitClassicTransaction } from "@/lib/transactions";
-import { config } from "@/lib/stellar";
+import { config, getExplorerTxUrl } from "@/lib/stellar";
 import { isValidStellarAddress } from "@/lib/contacts";
 import { Html5Qrcode } from "html5-qrcode";
 
@@ -315,7 +315,7 @@ export default function PayModal({
               <p className="text-sm text-text-secondary">to @{resolvedUsername}</p>
             )}
             <a
-              href={`https://stellar.expert/explorer/testnet/tx/${txHash}`}
+              href={getExplorerTxUrl(txHash)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-accent-purple hover:underline"

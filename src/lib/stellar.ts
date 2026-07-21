@@ -21,6 +21,11 @@ export const config = {
   },
 }[NETWORK]!;
 
+export function getExplorerTxUrl(txHash: string): string {
+  const explorerNetwork = NETWORK === "mainnet" ? "public" : "testnet";
+  return `https://stellar.expert/explorer/${explorerNetwork}/tx/${txHash}`;
+}
+
 export const horizon = new StellarSdk.Horizon.Server(config.horizonUrl);
 
 export const USDC_ISSUER =

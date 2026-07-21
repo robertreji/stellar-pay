@@ -101,7 +101,9 @@ export default function Sidebar({ onOpenProfile, activeTab = "home", onChangeTab
         <div className="flex flex-col gap-3 pt-4 border-t border-border-theme">
           <div className="bg-bg-card border border-border-theme rounded-xl py-2.5 px-3.5 flex items-center gap-2.5">
             <div className="w-2 h-2 rounded-full bg-success" />
-            <span className="text-xs font-semibold text-text-secondary">Testnet</span>
+            <span className="text-xs font-semibold text-text-secondary">
+              {process.env.NEXT_PUBLIC_STELLAR_NETWORK === "mainnet" ? "Mainnet" : "Testnet"}
+            </span>
           </div>
 
           <div className="flex items-center justify-between p-2.5 bg-bg-card border border-border-theme rounded-xl gap-2 transition-all duration-300 hover:border-border-theme-hover" onClick={onOpenProfile} style={{ cursor: onOpenProfile ? "pointer" : "default" }}>

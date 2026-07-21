@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWallet } from "@/context/WalletContext";
 import { buildPaymentTx, submitClassicTransaction } from "@/lib/transactions";
+import { getExplorerTxUrl } from "@/lib/stellar";
 
 interface TransferModalProps {
   isOpen: boolean;
@@ -107,7 +108,7 @@ export default function TransferModal({ isOpen, onClose }: TransferModalProps) {
               {amount} {fromAsset}
             </p>
             <a
-              href={`https://stellar.expert/explorer/testnet/tx/${txHash}`}
+              href={getExplorerTxUrl(txHash)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-accent-purple hover:underline"

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useWallet } from "@/context/WalletContext";
-import { getPaymentHistory, PaymentRecord } from "@/lib/stellar";
+import { getPaymentHistory, PaymentRecord, getExplorerTxUrl } from "@/lib/stellar";
 import { getContacts, Contact } from "@/lib/contacts";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -147,7 +147,7 @@ export default function TransactionList() {
               <a
                 key={tx.id}
                 className="flex items-center gap-3.5 bg-white border border-[#164A3A]/6 rounded-2xl p-4 transition-all duration-300 text-[#164A3A] hover:border-[#164A3A]/15 hover:shadow-[0_4px_16px_rgba(22,74,58,0.03)] no-underline cursor-pointer"
-                href={`https://stellar.expert/explorer/testnet/tx/${tx.transactionHash}`}
+                href={getExplorerTxUrl(tx.transactionHash)}
                 target="_blank"
                 rel="noopener noreferrer"
               >

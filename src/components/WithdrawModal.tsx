@@ -10,6 +10,7 @@ import {
   AnchorTransaction,
 } from "@/lib/moneygram";
 import { buildPaymentTx, submitClassicTransaction } from "@/lib/transactions";
+import { config, getExplorerTxUrl } from "@/lib/stellar";
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -160,7 +161,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
       }
 
       const account = await fetch(
-        `https://horizon-testnet.stellar.org/accounts/${address}`
+        `${config.horizonUrl}/accounts/${address}`
       ).then((res) => res.json());
 
       const asset = new StellarSdk.Asset("USDC", usdcIssuer || undefined);
@@ -183,7 +184,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
         new StellarSdk.Account(address, account.sequence),
         {
           fee: StellarSdk.BASE_FEE,
-          networkPassphrase: StellarSdk.Networks.TESTNET,
+          networkPassphrase: config.networkPassphrase,
         }
       )
         .addOperation(
@@ -984,7 +985,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
               </p>
               {paymentHash && (
                 <a
-                  href={`https://stellar.expert/explorer/testnet/tx/${paymentHash}`}
+                  href={getExplorerTxUrl(paymentHash)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-[#113C2F] font-semibold hover:underline"
