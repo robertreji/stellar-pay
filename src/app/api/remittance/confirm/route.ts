@@ -44,11 +44,11 @@ export async function POST(request: NextRequest) {
     await updateRemittanceStatus(reference_id, "processing", stellar_tx_hash);
 
     const payout = await bankService.payout({
-      fromAccount: remittance.sender_username,
+      fromAccount: "ACC_ANCHOR",
       toAccount: remittance.recipient_upi,
       amountUsd: remittance.amount_usdc,
       referenceId: reference_id,
-      idempotencyKey: reference_id,
+      idempotencyKey: `rem-${reference_id}`,
     });
 
     if (payout.success) {
