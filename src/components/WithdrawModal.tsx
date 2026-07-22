@@ -190,8 +190,9 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
     if (!address || !secretKey) return;
     setStep("paying");
     try {
-      const amount = details.amount_in;
-      const destination = details.withdraw_anchor_account;
+      const rawAmount = details.amount_in;
+      const amount = typeof rawAmount === "object" ? rawAmount?.amount : rawAmount;
+      const destination = details.destination_account || details.withdraw_anchor_account;
 
       if (!destination) {
         throw new Error(
@@ -205,8 +206,8 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
 
       const asset = new StellarSdk.Asset("USDC", usdcIssuer || undefined);
 
-      const memoType = details.withdraw_memo_type;
-      const memoValue = details.withdraw_memo;
+      const memoType = details.memo_type || details.withdraw_memo_type;
+      const memoValue = details.memo || details.withdraw_memo;
 
       let memoObj;
       if (memoType && memoValue) {
@@ -929,8 +930,13 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
               </h3>
               <p className="text-xs text-text-secondary leading-relaxed">
                 Interactive registration complete! Transferring{" "}
-                <strong>{withdrawDetails?.amount_in} USDC</strong> on-chain to
-                Anchor for bank settlement...
+                <strong>
+                  {typeof withdrawDetails?.amount_in === "object"
+                    ? withdrawDetails.amount_in.amount
+                    : withdrawDetails?.amount_in}{" "}
+                  USDC
+                </strong>{" "}
+                on-chain to Anchor for bank settlement...
               </p>
               <div className="w-full bg-[#fbfbfa] border border-[#113C2F]/10 rounded-2xl p-4 flex items-center gap-3 mt-2">
                 <div className="w-9 h-9 rounded-xl bg-[#113C2F]/10 text-[#113C2F] flex items-center justify-center shrink-0">

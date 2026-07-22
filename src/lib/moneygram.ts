@@ -13,11 +13,14 @@ export interface InteractiveResponse {
 export interface AnchorTransaction {
   id: string;
   status: string;
-  amount_in: string;
-  amount_out: string;
+  amount_in: string | { amount: string; asset?: string };
+  amount_out: string | { amount: string; asset?: string };
   withdraw_memo?: string;
   withdraw_memo_type?: string;
   withdraw_anchor_account?: string;
+  destination_account?: string;
+  memo?: string;
+  memo_type?: string;
 }
 
 // 1. SEP-10 Web Authentication Flow
