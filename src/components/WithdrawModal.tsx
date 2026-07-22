@@ -248,6 +248,20 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
       const result = await submitClassicTransaction(signedXdr);
       setPaymentHash(result.hash);
 
+      // Notify Anchor Platform of on-chain payment so status updates from pending_user_transfer_start -> pending_anchor
+      try {
+        await fetch(`${bankUrl}/api/bank/notify-onchain`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            transactionId: details.id,
+            stellarTxHash: result.hash,
+          }),
+        });
+      } catch (notifyErr) {
+        console.warn("Failed to notify anchor of on-chain payment:", notifyErr);
+      }
+
       setStep("success");
       await refreshBalances();
     } catch (err: any) {
